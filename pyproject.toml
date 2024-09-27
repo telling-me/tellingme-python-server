@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "tellingme-python-server"
+version = "0.1.0"
+description = ""
+authors = ["Dae-Jeong <v4chelsea@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+fastapi = {extras = ["standard"], version = "^0.115.0"}
+gunicorn = "^23.0.0"
+
+
+[tool.poetry.group.dev.dependencies]
+isort = "^5.13.2"
+mypy = "^1.11.2"
+black = "^24.8.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
