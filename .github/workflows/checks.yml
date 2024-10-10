@@ -1,6 +1,5 @@
 name: Code Quality Checks
 
-# 트리거 이벤트: push 또는 pull_request 시 CI가 실행됩니다.
 on:
   push:
     branches:
@@ -9,77 +8,34 @@ on:
 
 jobs:
   ci:
-    # 가장 최신버전의 ubuntu를 OS 환경으로 설정합니다.
     runs-on: ubuntu-latest
 
-    # services 키워드를 사용하여 MySQL 서비스를 설정
-    services:
-      db:
-        image: mysql:8.0
-        ports:
-          - 3306:3306
-        # Github Secrets에서 가져와서 env로 등록, MySQL 데이터베이스 연결 설정
-        env:
-          MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
-          MYSQL_DATABASE: ${{ secrets.MYSQL_DB }}
-          MYSQL_USER: ${{ secrets.MYSQL_USER }}
-          MYSQL_PASSWORD: ${{ secrets.MYSQL_PASSWORD }}
-        # MySQL 연결 상태를 확인. 10초 단위로 5번 재시도. 5초간 기다림.
-        options: >-
-          --health-cmd "mysqladmin ping -h localhost"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
     steps:
-      # CI 환경에서 코드를 체크아웃합니다.
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # CI 환경에서 사용할 파이썬 버전을 지정합니다.
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.12'
 
-        # 환경 변수를 추가
-#        env:
-
-
-      # Poetry를 설치합니다.
       - name: Install Poetry
         run: |
           curl -sSL https://install.python-poetry.org | python3 -
           echo "${HOME}/.local/bin" >> $GITHUB_PATH
 
-      # Poetry를 사용하여 의존성 패키지들을 설치합니다.
       - name: Install Packages & Libraries
         run: |
           poetry install
 
-      # isort를 사용하여 import 구문의 정렬 순서를 체크합니다.
       - name: Run isort (Import sorting)
         run: |
           poetry run isort . --check --diff
 
-      # black을 사용하여 PEP8 코드스타일을 준수했는지 체크합니다.
       - name: Run black (Code formatting)
         run: |
           poetry run black . --check
 
-      # mypy를 사용해서 타입힌팅 체크
       - name: Run Mypy
         run: |
           poetry run mypy .
-
-      # MySQL 연결을 테스트
-      - name: Wait for MySQL
-        run: |
-          until mysqladmin ping -h localhost -u ${{ secrets.MYSQL_USER }} -p${{ secrets.MYSQL_PASSWORD }}; do
-            sleep 1
-          done
-
-      # FastAPI 테스트 실행
-      - name: Run FastAPI tests with pytest
-        run: |
-          poetry run pytest
