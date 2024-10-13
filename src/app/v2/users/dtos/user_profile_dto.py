@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 
 
-class UserProfileDto(BaseModel):
+class UserProfileDTO(BaseModel):
     nickname: str
     badgeCode: str
     cheeseBalance: int

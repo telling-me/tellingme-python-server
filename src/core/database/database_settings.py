@@ -10,6 +10,7 @@ TORTOISE_APP_MODELS = [
     "app.v2.users.models.user_mission",
     "app.v2.users.models.refresh_token",
     "app.v2.badges.models.badge",
+    "app.v2.colors.models.color",
     "app.v2.answers.models.answer",
     "app.v2.payments.models.cheese_manager",
     "app.v2.teller_cards.models.teller_card",

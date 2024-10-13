@@ -1,6 +1,11 @@
 from tortoise import fields
 from tortoise.models import Model
 
+from app.v2.levels.dtos.level_dto import LevelDTO
+from app.v2.teller_cards.dtos.teller_card_dto import TellerCardDTO
+from app.v2.users.dtos.user_info_dto import UserInfoDTO
+from common.query_executor import QueryExecutor
+
 
 class User(Model):
     user_id = fields.CharField(max_length=54, pk=True)
@@ -58,3 +63,47 @@ class User(Model):
             return users[0]  # 첫 번째 결과 반환
         else:
             return None
+
+    @classmethod
+    async def get_user_info_by_user_id(cls, uuid_bytes: bytes) -> UserInfoDTO:
+        hex_data = uuid_bytes.hex()
+        query = f"""
+            SELECT 
+                u.nickname,
+                u.cheese_balance,
+                tc.activate_badge_code AS badgeCode,
+                bi.badge_name AS badgeName,
+                bi.badge_middle_name AS badgeMiddleName,
+                tc.activate_color_code AS colorCode
+            FROM user u
+            JOIN teller_card tc ON u.teller_card_id = tc.teller_card_id
+            JOIN badge_inventory bi ON tc.activate_badge_code = bi.badge_code
+            WHERE u.user_id = UNHEX('{hex_data}')
+        """
+        result = await QueryExecutor.execute_query(query, fetch_type="single")
+        if result:
+            user = result[0]
+            teller_card = TellerCardDTO(
+                badgeCode=user.get("badgeCode"),
+                badgeName=user.get("badgeName"),
+                badgeMiddleName=user.get("badgeMiddleName"),
+                colorCode=user.get("colorCode"),
+            )
+            return UserInfoDTO(
+                nickname=user.get("nickname"),
+                cheeseBalance=user.get("cheese_balance"),
+                tellerCard=teller_card,
+            )
+        return None
+
+    @classmethod
+    async def get_level_info_by_user_id(cls, uuid_bytes: bytes) -> LevelDTO:
+        hex_data = uuid_bytes.hex()
+        query = f"SELECT user_level AS level, user_exp AS current_exp FROM user WHERE user_id = UNHEX('{hex_data}')"
+        result = await QueryExecutor.execute_query(query, fetch_type="multiple")
+        if result:
+            level_data = result[0]
+            return LevelDTO(
+                level=level_data.get("level"), current_exp=level_data.get("current_exp")
+            )
+        return None

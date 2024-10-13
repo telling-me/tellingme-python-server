@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
 
-class LevelDto(BaseModel):
+class LevelDTO(BaseModel):
     level: int
     current_exp: int
