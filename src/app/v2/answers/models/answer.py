@@ -1,8 +1,8 @@
-from fastapi import Depends
-from tortoise import fields, Tortoise
+from tortoise import fields
 from tortoise.models import Model
 
-from common.query_executor import QueryExecutor
+from app.v2.answers.querys.answer_query import SELECT_ANSWER_COUNT_BY_USER_UUID_QUERY
+from common.utils.query_executor import QueryExecutor
 
 
 class Answer(Model):
@@ -28,13 +28,11 @@ class Answer(Model):
     class Meta:
         table = "answer"
 
+    # 기존 get_answer_count_by_user_id 메서드
     @classmethod
-    async def get_answer_count_by_user_id(
-        cls,
-        uuid_bytes: bytes,
-    ) -> int:
-        hex_data = uuid_bytes.hex()  # uuid_bytes를 16진수 문자열로 변환
-        query = (
-            f"SELECT COUNT(*) as answer_count FROM answer WHERE user_id = 0x{hex_data}"
+    async def get_answer_count_by_user_id(cls, user_id: str) -> int:
+        query = SELECT_ANSWER_COUNT_BY_USER_UUID_QUERY
+        value = user_id
+        return await QueryExecutor.execute_query(
+            query, values=value, fetch_type="single"
         )
-        return await QueryExecutor.execute_query(query, fetch_type="single")

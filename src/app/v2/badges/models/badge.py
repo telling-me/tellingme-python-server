@@ -2,7 +2,13 @@ from tortoise import fields
 from tortoise.models import Model
 
 from app.v2.badges.dtos.badge_dto import BadgeCodeDTO
-from common.query_executor import QueryExecutor
+from app.v2.badges.querys.badge_query import (
+    SELECT_BADGE_COUNT_AND_CODES_BY_USER_UUID_QUERY,
+    SELECT_BADGE_BY_USER_UUID_QUERY,
+    SELECT_BADGE_CODE_BY_USER_UUID_QUERY,
+)
+
+from common.utils.query_executor import QueryExecutor
 
 
 class Badge(Model):
@@ -14,54 +20,35 @@ class Badge(Model):
         table = "badge"
 
     @classmethod
-    async def get_badge_count_and_codes_by_user_id(
-        cls,
-        uuid_bytes: bytes,
-    ) -> dict:
-        hex_data = uuid_bytes.hex()
-        query = f"""
-            SELECT COUNT(*) as badge_count, GROUP_CONCAT(badge_code) as badge_codes
-            FROM badge
-            WHERE user_id = UNHEX('{hex_data}')
-        """
+    async def get_badge_count_and_codes_by_user_id(cls, user_id: str) -> tuple:
 
-        result = await QueryExecutor.execute_query(query, fetch_type="multiple")
-        print(result)
-        if result and len(result) > 0:
-            return (
-                result[0].get("badge_count", 0),
-                result[0].get("badge_code", ""),
-            )
+        query = SELECT_BADGE_COUNT_AND_CODES_BY_USER_UUID_QUERY
+        value = user_id
+        result = await QueryExecutor.execute_query(
+            query, values=value, fetch_type="multiple"
+        )
 
-        return {"badge_count": 0, "badge_codes": ""}
+        return (
+            (result[0].get("badge_count", 0), result[0].get("badge_code", ""))
+            if result and len(result) > 0
+            else (0, "")
+        )
 
     @classmethod
-    async def get_badges_with_details_by_user_id(
-        cls,
-        uuid_bytes: bytes,
-    ) -> list:
-        hex_data = uuid_bytes.hex()  # uuid_bytes를 16진수로 변환
-        query = f"""
-                SELECT 
-                    b.badge_code,
-                    bi.badge_name,
-                    bi.badge_condition,
-                    bi.badge_middle_name
-                FROM badge b
-                JOIN badge_inventory bi ON b.badge_code = bi.badge_code
-                WHERE b.user_id = UNHEX('{hex_data}')
-            """
+    async def get_badges_with_details_by_user_id(cls, user_id: str) -> list:
+        query = SELECT_BADGE_BY_USER_UUID_QUERY
+        value = user_id
 
-        result = await QueryExecutor.execute_query(query, fetch_type="multiple")
+        result = await QueryExecutor.execute_query(
+            query, values=value, fetch_type="multiple"
+        )
 
-        if result and len(result) > 0:
-            return result  # 배지 정보를 딕셔너리 리스트로 반환
-
-        return []  # 결과가 없을 경우 빈 리스트 반환
+        return result if result else []
 
     @classmethod
-    async def get_badge_codes_by_user_id(cls, uuid_bytes: bytes) -> list[BadgeCodeDTO]:
-        hex_data = uuid_bytes.hex()
-        query = f"SELECT badge_code FROM badge WHERE user_id = UNHEX('{hex_data}')"
-        badges = await QueryExecutor.execute_query(query, fetch_type="multiple")
-        return [BadgeCodeDTO(badgeCode=badge.get("badge_code")) for badge in badges]
+    async def get_badge_codes_by_user_id(cls, user_id: str) -> list[dict]:
+        query = SELECT_BADGE_CODE_BY_USER_UUID_QUERY
+        value = user_id
+        return await QueryExecutor.execute_query(
+            query, values=value, fetch_type="multiple"
+        )

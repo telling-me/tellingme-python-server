@@ -4,11 +4,17 @@ from tortoise.models import Model
 from app.v2.levels.dtos.level_dto import LevelDTO
 from app.v2.teller_cards.dtos.teller_card_dto import TellerCardDTO
 from app.v2.users.dtos.user_info_dto import UserInfoDTO
-from common.query_executor import QueryExecutor
+from app.v2.users.querys.user_query import (
+    SELECT_USER_BY_UUID_QUERY,
+    SELECT_USER_INFO_BY_USER_UUID_QUERY,
+    SELECT_USER_LEVEL_AND_EXP_BY_USER_UUID_QUERY,
+)
+from common.utils.query_executor import QueryExecutor
+from common.utils.query_formatter import QueryFormatter
 
 
 class User(Model):
-    user_id = fields.CharField(max_length=54, pk=True)
+    user_id = fields.BinaryField(pk=True)  # BINARY(16)로 저장
     allow_notification = fields.BooleanField(null=True)
     birth_date = fields.CharField(max_length=8, null=True)
     created_time = fields.DatetimeField(auto_now_add=True)
@@ -53,57 +59,29 @@ class User(Model):
         table = "user"
 
     @classmethod
-    async def get_by_user_id(cls, uuid_bytes: bytes) -> "User":
-        hex_data = uuid_bytes.hex()
-        print(hex_data)
-        users = await cls.raw(
-            f"SELECT * FROM user WHERE user_id = 0x{hex_data} LIMIT 1"
+    async def get_by_user_id(cls, user_id: str) -> "User":
+        query = QueryFormatter.format(
+            query_template=SELECT_USER_BY_UUID_QUERY, values=user_id
         )
+        users = await cls.raw(query)
         if users:
             return users[0]  # 첫 번째 결과 반환
-        else:
-            return None
-
-    @classmethod
-    async def get_user_info_by_user_id(cls, uuid_bytes: bytes) -> UserInfoDTO:
-        hex_data = uuid_bytes.hex()
-        query = f"""
-            SELECT 
-                u.nickname,
-                u.cheese_balance,
-                tc.activate_badge_code AS badgeCode,
-                bi.badge_name AS badgeName,
-                bi.badge_middle_name AS badgeMiddleName,
-                tc.activate_color_code AS colorCode
-            FROM user u
-            JOIN teller_card tc ON u.teller_card_id = tc.teller_card_id
-            JOIN badge_inventory bi ON tc.activate_badge_code = bi.badge_code
-            WHERE u.user_id = UNHEX('{hex_data}')
-        """
-        result = await QueryExecutor.execute_query(query, fetch_type="single")
-        if result:
-            user = result[0]
-            teller_card = TellerCardDTO(
-                badgeCode=user.get("badgeCode"),
-                badgeName=user.get("badgeName"),
-                badgeMiddleName=user.get("badgeMiddleName"),
-                colorCode=user.get("colorCode"),
-            )
-            return UserInfoDTO(
-                nickname=user.get("nickname"),
-                cheeseBalance=user.get("cheese_balance"),
-                tellerCard=teller_card,
-            )
         return None
 
     @classmethod
-    async def get_level_info_by_user_id(cls, uuid_bytes: bytes) -> LevelDTO:
-        hex_data = uuid_bytes.hex()
-        query = f"SELECT user_level AS level, user_exp AS current_exp FROM user WHERE user_id = UNHEX('{hex_data}')"
-        result = await QueryExecutor.execute_query(query, fetch_type="multiple")
-        if result:
-            level_data = result[0]
-            return LevelDTO(
-                level=level_data.get("level"), current_exp=level_data.get("current_exp")
-            )
-        return None
+    async def get_user_info_by_user_id(cls, user_id: str) -> dict | None:
+        query = SELECT_USER_INFO_BY_USER_UUID_QUERY
+        value = user_id
+        result = await QueryExecutor.execute_query(
+            query, values=value, fetch_type="single"
+        )
+        return result[0] if result else None
+
+    @classmethod
+    async def get_level_info_by_user_id(cls, user_id: str) -> dict | None:
+        query = SELECT_USER_LEVEL_AND_EXP_BY_USER_UUID_QUERY
+        value = user_id
+        result = await QueryExecutor.execute_query(
+            query, values=value, fetch_type="multiple"
+        )
+        return result[0] if result else None
