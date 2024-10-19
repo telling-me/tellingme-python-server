@@ -37,12 +37,9 @@ class Badge(Model):
     async def get_badges_with_details_by_user_id(cls, user_id: str) -> list:
         query = SELECT_BADGE_BY_USER_UUID_QUERY
         value = user_id
-
-        result = await QueryExecutor.execute_query(
+        return await QueryExecutor.execute_query(
             query, values=value, fetch_type="multiple"
         )
-
-        return result if result else []
 
     @classmethod
     async def get_badge_codes_by_user_id(cls, user_id: str) -> list[dict]:

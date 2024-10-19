@@ -18,7 +18,9 @@ class QueryExecutor:
         """
         connection = Tortoise.get_connection("default")
 
-        if not isinstance(values, tuple):
+        if isinstance(values, tuple):
+            values = tuple(v[0] if isinstance(v, tuple) else v for v in values)
+        else:
             values = (values,)
 
         result = await connection.execute_query_dict(query, values)

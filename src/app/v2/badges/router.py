@@ -13,9 +13,9 @@ router = APIRouter(prefix="/user/badge", tags=["Badge"])
     status_code=status.HTTP_200_OK,
 )
 async def get_user_badge_handler():
-    uuid_bytes = b"\x18\nN@b\xf8F\xbe\xb1\xeb\xe7\xe3\xdd\x91\xcd\xdf"
+    user_id = "180a4e40-62f8-46be-b1eb-e7e3dd91cddf"
 
-    badge_list = await Badge.get_badges_with_details_by_user_id(uuid_bytes=uuid_bytes)
+    badge_list = await Badge.get_badges_with_details_by_user_id(user_id=user_id)
 
     badges = [
         BadgeDTO(

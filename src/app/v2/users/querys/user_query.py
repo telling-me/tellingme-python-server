@@ -18,3 +18,10 @@ SELECT_USER_INFO_BY_USER_UUID_QUERY = f"""
     FROM user u
     WHERE {USER_ID_QUERY}
 """
+
+SELECT_USER_TELLER_CARD_ID_BY_USER_UUID_QUERY = f"""
+    SELECT
+        u.teller_card_id
+    FROM user u
+    WHERE {USER_ID_QUERY}
+"""
