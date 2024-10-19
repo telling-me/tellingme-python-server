@@ -59,10 +59,10 @@ async def mobile_teller_card_handler():
     ]
 
     teller_card = TellerCardDTO(
-        badgeCode=teller_cards_raw.get("badgeCode"),
-        badgeName=teller_cards_raw.get("badgeName"),
-        badgeMiddleName=teller_cards_raw.get("badgeMiddleName"),
-        colorCode=teller_cards_raw.get("colorCode"),
+        badgeCode=teller_cards_raw.get("activate_badge_code"),
+        badgeName=teller_cards_raw.get("badge_name"),
+        badgeMiddleName=teller_cards_raw.get("badge_middle_name"),
+        colorCode=teller_cards_raw.get("activate_color_code"),
     )
 
     user_info = UserInfoDTO(

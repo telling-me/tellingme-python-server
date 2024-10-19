@@ -8,7 +8,7 @@ router = APIRouter(prefix="/user/badge", tags=["Badge"])
 
 
 @router.get(
-    "/",
+    "",
     response_model=BadgeListResponseDTO,
     status_code=status.HTTP_200_OK,
 )

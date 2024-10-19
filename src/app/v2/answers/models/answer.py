@@ -1,7 +1,12 @@
+from datetime import datetime
+
 from tortoise import fields
 from tortoise.models import Model
 
-from app.v2.answers.querys.answer_query import SELECT_ANSWER_COUNT_BY_USER_UUID_QUERY
+from app.v2.answers.querys.answer_query import (
+    SELECT_ANSWER_COUNT_BY_USER_UUID_QUERY,
+    SELECT_ANSWER_BY_USER_UUID_QUERY,
+)
 from common.utils.query_executor import QueryExecutor
 
 
@@ -35,4 +40,15 @@ class Answer(Model):
         value = user_id
         return await QueryExecutor.execute_query(
             query, values=value, fetch_type="single"
+        )
+
+    @classmethod
+    async def find_all_by_user(
+        cls, user_id: str, start_date: datetime, end_date: datetime
+    ) -> list[dict] | None:
+        query = SELECT_ANSWER_BY_USER_UUID_QUERY
+        values = (user_id, start_date, end_date)
+
+        return await QueryExecutor.execute_query(
+            query, values=values, fetch_type="multiple"
         )

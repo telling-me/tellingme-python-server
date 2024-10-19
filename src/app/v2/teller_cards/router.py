@@ -10,7 +10,7 @@ router = APIRouter(prefix="/tellercard", tags=["TellerCard"])
 
 
 @router.patch(
-    "/",
+    "",
     response_model=TellerCardResponseDTO,
     status_code=status.HTTP_200_OK,
 )
@@ -28,10 +28,12 @@ async def patch_teller_card_handler(
     )
 
     teller_card = await TellerCard.get_teller_card_info_by_user_id(user_id=user_id)
-    print(teller_card)
+
+    activate_badge_code = teller_card["activate_badge_code"]
+    activate_color_code = teller_card["activate_color_code"]
 
     await Badge.get_badge_count_and_codes_by_user_id(user_id)
     return TellerCardResponseDTO(
-        colorCode=body.colorCode,
-        badgeCode=body.badgeCode,
+        colorCode=activate_color_code,
+        badgeCode=activate_badge_code,
     )
