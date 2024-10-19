@@ -21,15 +21,11 @@ class QueryExecutor:
         if not isinstance(values, tuple):
             values = (values,)
 
-        try:
-            result = await connection.execute_query_dict(query, values)
+        result = await connection.execute_query_dict(query, values)
 
-            if result and len(result) > 0:
-                if fetch_type == "single":
-                    return result[0].get(list(result[0].keys())[0], 0)
-                elif fetch_type == "multiple":
-                    return result
-            return 0 if fetch_type == "single" else []
-
-        finally:
-            await connection.close()
+        if result and len(result) > 0:
+            if fetch_type == "single":
+                return result[0]
+            elif fetch_type == "multiple":
+                return result
+        return 0 if fetch_type == "single" else []

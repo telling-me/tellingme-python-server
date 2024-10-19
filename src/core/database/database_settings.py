@@ -12,8 +12,10 @@ TORTOISE_APP_MODELS = [
     "app.v2.badges.models.badge",
     "app.v2.colors.models.color",
     "app.v2.answers.models.answer",
-    "app.v2.payments.models.cheese_manager",
+    # "app.v2.payments.models.cheese_manager",
     "app.v2.teller_cards.models.teller_card",
+    "app.v2.levels.models.level",
+    "app.v2.cheese_managers.models.cheese_manager",
 ]
 
 TORTOISE_ORM = {
@@ -28,6 +30,8 @@ TORTOISE_ORM = {
                 "database": settings.DB_NAME,
                 "connect_timeout": 5,
                 "charset": settings.DB_CHARSET,
+                "minsize": 5,  # 커넥션 풀 최소 크기
+                "maxsize": 10,  # 커넥션 풀 최대 크기
             },
         },
     },

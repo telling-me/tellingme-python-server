@@ -1,7 +1,6 @@
 from tortoise import fields
 from tortoise.models import Model
 
-from app.v2.badges.dtos.badge_dto import BadgeCodeDTO
 from app.v2.badges.querys.badge_query import (
     SELECT_BADGE_COUNT_AND_CODES_BY_USER_UUID_QUERY,
     SELECT_BADGE_BY_USER_UUID_QUERY,
