@@ -3,24 +3,28 @@ import asyncio
 from fastapi import APIRouter, status, HTTPException
 
 from app.v2.answers.models.answer import Answer
-from app.v2.badges.dtos.badge_dto import BadgeCodeDTO
+
 from app.v2.badges.models.badge import Badge
+from app.v2.badges.services.badge_service import BadgeService
 from app.v2.cheese_managers.models.cheese_manager import CheeseManager
-from app.v2.colors.dtos.color_dto import ColorCodeDTO
-from app.v2.colors.models.color import Color
+from app.v2.cheese_managers.services.cheese_service import CheeseService
+
+from app.v2.colors.services.color_service import ColorService
 from app.v2.levels.dtos.level_dto import LevelDTO
 from app.v2.levels.models.level import Level
+from app.v2.levels.services.level_service import LevelService
 
 from app.v2.mobiles.dtos.mypage_response import (
     UserProfileWithLevel,
     MyPageResponseDTO,
 )
 from app.v2.mobiles.dtos.teller_card_response import DataDTO, TellerCardResponseDTO
-from app.v2.teller_cards.dtos.teller_card_dto import TellerCardDTO
-from app.v2.teller_cards.models.teller_card import TellerCard
+
+from app.v2.teller_cards.services.teller_card_service import TellerCardService
 from app.v2.users.dtos.user_info_dto import UserInfoDTO
 from app.v2.users.dtos.user_profile_dto import UserProfileDTO
 from app.v2.users.models.user import User
+from app.v2.users.services.user_service import UserService
 
 router = APIRouter(prefix="/mobiles", tags=["모바일 화면용 컨트롤러"])
 
@@ -30,50 +34,33 @@ async def mobile_main_handler():
     pass
 
 
-@router.get("/tellercard")
+@router.get(
+    "/tellercard",
+    response_model=TellerCardResponseDTO,
+    status_code=status.HTTP_200_OK,
+)
 async def mobile_teller_card_handler():
     user_id = "180a4e40-62f8-46be-b1eb-e7e3dd91cddf"
 
     try:
-        badges_raw, colors_raw, level_info_raw, teller_cards_raw, user_raw = (
-            await asyncio.gather(
-                Badge.get_badge_codes_by_user_id(user_id=user_id),
-                Color.get_color_codes_by_user_id(user_id=user_id),
-                Level.get_level_info_by_user_id(user_id=user_id),
-                TellerCard.get_teller_card_info_by_user_id(user_id=user_id),
-                User.get_user_info_by_user_id(user_id=user_id),
-            )
+        badges_task = BadgeService.get_badges(user_id)
+        colors_task = ColorService.get_colors(user_id)
+        level_info_task = LevelService.get_level_info(user_id)  # LevelService 추가
+        teller_card_task = TellerCardService.get_teller_card(user_id)
+        user_info_task = UserService.get_user_info(user_id)
+
+        badges, colors, level_info, teller_card, user_raw = await asyncio.gather(
+            badges_task, colors_task, level_info_task, teller_card_task, user_info_task
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail="내부 서버 오류")
 
-    cheese_amount = await CheeseManager.get_total_cheese_amount_by_manager(
-        cheese_manager_id=user_raw["cheese_manager_id"]
+    cheese_amount = await CheeseService.get_cheese_balance(
+        user_raw["cheese_manager_id"]
     )
 
-    badges: list[BadgeCodeDTO] = [
-        BadgeCodeDTO(badgeCode=badge.get("badge_code")) for badge in badges_raw
-    ]
-    colors: list[ColorCodeDTO] = [
-        ColorCodeDTO(colorCode=color.get("color_code")) for color in colors_raw
-    ]
-
-    teller_card = TellerCardDTO(
-        badgeCode=teller_cards_raw.get("activate_badge_code"),
-        badgeName=teller_cards_raw.get("badge_name"),
-        badgeMiddleName=teller_cards_raw.get("badge_middle_name"),
-        colorCode=teller_cards_raw.get("activate_color_code"),
-    )
-
-    user_info = UserInfoDTO(
-        nickname=user_raw.get("nickname"),
-        cheeseBalance=cheese_amount,
-        tellerCard=teller_card,
-    )
-
-    level_info: LevelDTO = LevelDTO(
-        level=level_info_raw.get("level_level"),
-        current_exp=level_info_raw.get("level_exp"),
+    user_info = UserInfoDTO.builder(
+        user_raw, cheeseBalance=cheese_amount, tellerCard=teller_card
     )
 
     data = DataDTO(badges=badges, colors=colors, userInfo=user_info, level=level_info)

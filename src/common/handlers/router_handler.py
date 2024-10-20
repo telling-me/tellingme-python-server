@@ -5,6 +5,7 @@ from app.v2.teller_cards.router import router as teller_card_router
 from app.v2.payments.router import router as payment_router
 from app.v2.missions.router import router as mission_router
 from app.v2.answers.router import router as answer_router
+from app.v2.cheese_managers.router import router as cheese_router
 
 
 def attach_router_handlers(app):
@@ -14,4 +15,5 @@ def attach_router_handlers(app):
     app.include_router(router=teller_card_router, prefix="/api/v2")
     app.include_router(router=payment_router, prefix="/api/v2")
     app.include_router(router=mission_router, prefix="/api/v2")
+    app.include_router(router=cheese_router, prefix="/api/v2")
     app.include_router(router=answer_router, prefix="/test")

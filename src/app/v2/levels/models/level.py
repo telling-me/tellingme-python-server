@@ -3,6 +3,8 @@ from tortoise.models import Model
 
 from app.v2.levels.querys.level_query import (
     SELECT_USER_LEVEL_AND_EXP_BY_USER_UUID_QUERY,
+    SELECT_USER_EXP_QUERY,
+    UPDATE_USER_LEVEL_AND_EXP_QUERY,
 )
 from common.utils.query_executor import QueryExecutor
 
@@ -22,3 +24,19 @@ class Level(Model):
         return await QueryExecutor.execute_query(
             query, values=value, fetch_type="single"
         )
+
+    @classmethod
+    async def get_required_exp_by_user_id(cls, user_id: str) -> dict | None:
+        query = SELECT_USER_EXP_QUERY
+        value = user_id
+        return await QueryExecutor.execute_query(
+            query, values=(value,), fetch_type="single"
+        )
+
+    @classmethod
+    async def update_level_and_exp(
+        cls, user_id: str, new_level: int, new_exp: int
+    ) -> None:
+        query = UPDATE_USER_LEVEL_AND_EXP_QUERY
+        values = (new_level, new_exp, user_id)
+        await QueryExecutor.execute_query(query, values=values, fetch_type="single")
