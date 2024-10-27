@@ -2,7 +2,10 @@ from tortoise import fields
 from tortoise.models import Model
 
 from app.v2.colors.dtos.color_dto import ColorCodeDTO
-from app.v2.colors.querys.color_query import SELECT_COLOR_CODE_BY_USER_UUID_QUERY
+from app.v2.colors.querys.color_query import (
+    SELECT_COLOR_CODE_BY_USER_UUID_QUERY,
+    INSERT_COLOR_CODE_FOR_USER_QUERY,
+)
 from common.utils.query_executor import QueryExecutor
 
 
@@ -22,4 +25,12 @@ class Color(Model):
         value = user_id
         return await QueryExecutor.execute_query(
             query, values=value, fetch_type="multiple"
+        )
+
+    @classmethod
+    async def add_color_code_for_user(cls, user_id: str, color_code: str) -> dict:
+        query = INSERT_COLOR_CODE_FOR_USER_QUERY
+        values = (color_code, user_id)
+        return await QueryExecutor.execute_query(
+            query, values=values, fetch_type="single"
         )

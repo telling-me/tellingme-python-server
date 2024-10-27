@@ -16,6 +16,7 @@ TORTOISE_APP_MODELS = [
     "app.v2.teller_cards.models.teller_card",
     "app.v2.levels.models.level",
     "app.v2.cheese_managers.models.cheese_manager",
+    "app.v2.items.models.item",
 ]
 
 TORTOISE_ORM = {

@@ -87,9 +87,7 @@ async def mobile_my_page_handler():
         Level.get_level_info_by_user_id(user_id=user_id),
     )
 
-    cheese_amount = await CheeseManager.get_total_cheese_amount_by_manager(
-        cheese_manager_id=user["cheese_manager_id"]
-    )
+    cheese_amount = await CheeseManager.get_total_cheese_amount_by_manager()
 
     user_profile_data = UserProfileWithLevel(
         userProfile=UserProfileDTO(

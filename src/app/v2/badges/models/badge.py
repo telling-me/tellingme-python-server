@@ -5,6 +5,7 @@ from app.v2.badges.querys.badge_query import (
     SELECT_BADGE_COUNT_AND_CODES_BY_USER_UUID_QUERY,
     SELECT_BADGE_BY_USER_UUID_QUERY,
     SELECT_BADGE_CODE_BY_USER_UUID_QUERY,
+    INSERT_BADGE_CODE_FOR_USER_QUERY,
 )
 
 from common.utils.query_executor import QueryExecutor
@@ -48,3 +49,9 @@ class Badge(Model):
         return await QueryExecutor.execute_query(
             query, values=value, fetch_type="multiple"
         )
+
+    @classmethod
+    async def add_badge(cls, user_id: str, badge_code: str) -> None:
+        query = INSERT_BADGE_CODE_FOR_USER_QUERY
+        values = (badge_code, user_id)
+        await QueryExecutor.execute_query(query, values=values)

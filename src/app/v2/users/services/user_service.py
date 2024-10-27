@@ -9,6 +9,4 @@ class UserService:
 
     @classmethod
     async def get_cheese_balance(cls, cheese_manager_id: str) -> int:
-        return await CheeseManager.get_total_cheese_amount_by_manager(
-            cheese_manager_id=cheese_manager_id
-        )
+        return await CheeseManager.get_total_cheese_amount_by_manager()
