@@ -2,6 +2,7 @@ USER_ID_QUERY = "user_id = UNHEX(REPLACE(%s, '-', ''))"
 
 SELECT_USER_BY_UUID_QUERY = f"SELECT * FROM user WHERE {USER_ID_QUERY} LIMIT 1"
 
+
 SELECT_USER_PROFILE_BY_USER_ID_QUERY = f"""
     SELECT 
         u.nickname,

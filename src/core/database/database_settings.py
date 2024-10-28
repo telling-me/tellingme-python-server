@@ -17,6 +17,7 @@ TORTOISE_APP_MODELS = [
     "app.v2.levels.models.level",
     "app.v2.cheese_managers.models.cheese_manager",
     "app.v2.items.models.item",
+    "app.v2.missions.models.mission",
 ]
 
 TORTOISE_ORM = {

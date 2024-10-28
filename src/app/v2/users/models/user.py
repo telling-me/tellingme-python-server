@@ -1,10 +1,14 @@
-from tortoise import fields
+from typing import Optional, Any
+
+from fastapi import Depends
+from tortoise import fields, connections
 from tortoise.models import Model
 
 from app.v2.users.querys.user_query import (
     SELECT_USER_INFO_BY_USER_UUID_QUERY,
     SELECT_USER_PROFILE_BY_USER_ID_QUERY,
     SELECT_USER_TELLER_CARD_ID_BY_USER_UUID_QUERY,
+    SELECT_USER_BY_UUID_QUERY,
 )
 from common.utils.query_executor import QueryExecutor
 
@@ -81,3 +85,12 @@ class User(Model):
         return await QueryExecutor.execute_query(
             query, values=value, fetch_type="single"
         )
+
+    @classmethod
+    async def get_user_by_uuid(cls, user_id: str) -> Optional[dict[str, Any]]:
+        conn = connections.get("default")
+        result = await conn.execute_query_dict(SELECT_USER_BY_UUID_QUERY, [user_id])
+        if not result:
+            return None
+        user = result[0]
+        return user
