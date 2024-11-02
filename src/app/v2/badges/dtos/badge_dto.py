@@ -15,6 +15,11 @@ class BadgeDTO(BaseModel):
     badgeMiddleName: str
     badgeCondition: str
 
-
-class BadgeListDTO(BaseModel):
-    badges: list[BadgeDTO]
+    @classmethod
+    def builder(cls, badge_raw: dict) -> "BadgeDTO":
+        return cls(
+            badgeCode=badge_raw.get("badge_code"),
+            badgeName=badge_raw.get("badge_name"),
+            badgeMiddleName=badge_raw.get("badge_middle_name"),
+            badgeCondition=badge_raw.get("badge_condition"),
+        )

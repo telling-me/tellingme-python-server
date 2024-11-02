@@ -10,3 +10,7 @@ class UserService:
     @classmethod
     async def get_cheese_balance(cls, cheese_manager_id: str) -> int:
         return await CheeseManager.get_total_cheese_amount_by_manager()
+
+    @classmethod
+    async def get_user_profile(cls, user_id: str) -> dict:
+        return await User.get_user_profile_by_user_id(user_id=user_id)

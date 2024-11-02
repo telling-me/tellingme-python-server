@@ -2,10 +2,10 @@ from tortoise import fields
 from tortoise.models import Model
 
 from app.v2.badges.querys.badge_query import (
-    SELECT_BADGE_COUNT_AND_CODES_BY_USER_UUID_QUERY,
     SELECT_BADGE_BY_USER_UUID_QUERY,
     SELECT_BADGE_CODE_BY_USER_UUID_QUERY,
     INSERT_BADGE_CODE_FOR_USER_QUERY,
+    SELECT_BADGE_COUNT_BY_USER_UUID_QUERY,
 )
 
 from common.utils.query_executor import QueryExecutor
@@ -20,18 +20,12 @@ class Badge(Model):
         table = "badge"
 
     @classmethod
-    async def get_badge_count_and_codes_by_user_id(cls, user_id: str) -> tuple:
+    async def get_badge_count_by_user_id(cls, user_id: str) -> dict:
 
-        query = SELECT_BADGE_COUNT_AND_CODES_BY_USER_UUID_QUERY
+        query = SELECT_BADGE_COUNT_BY_USER_UUID_QUERY
         value = user_id
-        result = await QueryExecutor.execute_query(
-            query, values=value, fetch_type="multiple"
-        )
-
-        return (
-            (result[0].get("badge_count", 0), result[0].get("badge_code", ""))
-            if result and len(result) > 0
-            else (0, "")
+        return await QueryExecutor.execute_query(
+            query, values=value, fetch_type="single"
         )
 
     @classmethod

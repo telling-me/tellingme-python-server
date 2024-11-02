@@ -1,6 +1,12 @@
 from tortoise import fields
 from tortoise.models import Model
 
+from app.v2.missions.querys.mission_query import (
+    SELECT_USER_MISSIONS_BY_CONDITION_TYPE_QUERY,
+    UPDATE_USER_MISSION_PROGRESS_QUERY,
+)
+from common.utils.query_executor import QueryExecutor
+
 
 class UserMission(Model):
     user_mission_id = fields.BigIntField(pk=True)
@@ -8,6 +14,29 @@ class UserMission(Model):
     mission_code = fields.CharField(max_length=255)
     progress_count = fields.IntField(default=0)
     user = fields.ForeignKeyField("models.User", related_name="missions")
+
+    @classmethod
+    async def get_user_missions_by_condition_type(
+        cls, user_id: str, condition_type: str
+    ):
+        # 유저 ID와 미션 조건 타입에 따른 미션 필터링
+        query = SELECT_USER_MISSIONS_BY_CONDITION_TYPE_QUERY
+        values = (user_id, condition_type)
+        return await QueryExecutor.execute_query(
+            query, values=values, fetch_type="multiple"
+        )
+
+    @classmethod
+    async def update_user_mission_progress(
+        cls,
+        user_id: str,
+        mission_code: str,
+        new_progress_count: int,
+        is_completed: bool,
+    ):
+        query = UPDATE_USER_MISSION_PROGRESS_QUERY
+        values = (new_progress_count, int(is_completed), user_id, mission_code)
+        await QueryExecutor.execute_query(query, values=values, fetch_type="single")
 
 
 class MissionInventory(Model):
@@ -18,3 +47,6 @@ class MissionInventory(Model):
     mission_name = fields.CharField(max_length=255)
     reward_code = fields.CharField(max_length=255)
     target_count = fields.IntField()
+
+    class Meta:
+        table = "mission_inventory"

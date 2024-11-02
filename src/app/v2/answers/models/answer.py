@@ -35,7 +35,7 @@ class Answer(Model):
 
     # 기존 get_answer_count_by_user_id 메서드
     @classmethod
-    async def get_answer_count_by_user_id(cls, user_id: str) -> int:
+    async def get_answer_count_by_user_id(cls, user_id: str) -> dict:
         query = SELECT_ANSWER_COUNT_BY_USER_UUID_QUERY
         value = user_id
         return await QueryExecutor.execute_query(

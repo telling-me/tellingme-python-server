@@ -9,9 +9,11 @@ class LevelService:
     async def get_level_info(cls, user_id: str) -> LevelDTO:
         # 레벨 정보를 조회하는 로직
         level_info_raw = await Level.get_level_info_by_user_id(user_id=user_id)
+        required_exp_raw = await Level.get_required_exp_by_user_id(user_id=user_id)
         return LevelDTO.builder(
             level=level_info_raw.get("level_level"),
             current_exp=level_info_raw.get("level_exp"),
+            required_exp=required_exp_raw.get("required_exp"),
         )
 
     @classmethod

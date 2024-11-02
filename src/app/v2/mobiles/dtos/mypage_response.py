@@ -9,6 +9,17 @@ class UserProfileWithLevel(BaseModel):
     userProfile: UserProfileDTO
     level: LevelDTO
 
+    @classmethod
+    def builder(
+        cls,
+        userProfile: UserProfileDTO,
+        level: LevelDTO,
+    ) -> "UserProfileWithLevel":
+        return cls(
+            userProfile=userProfile,
+            level=level,
+        )
+
 
 class MyPageResponseDTO(BaseResponseDTO):
     data: UserProfileWithLevel

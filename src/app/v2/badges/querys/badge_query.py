@@ -1,7 +1,7 @@
 from app.v2.users.querys.user_query import USER_ID_QUERY
 
-SELECT_BADGE_COUNT_AND_CODES_BY_USER_UUID_QUERY = f"""
-    SELECT COUNT(*) as badge_count, GROUP_CONCAT(badge_code) as badge_codes
+SELECT_BADGE_COUNT_BY_USER_UUID_QUERY = f"""
+    SELECT COUNT(*) as badge_count
     FROM badge
     WHERE {USER_ID_QUERY}
 """

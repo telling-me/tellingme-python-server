@@ -9,6 +9,7 @@ from app.v2.missions.dtos.response import (
     UserLevelResponse,
 )
 from app.v2.missions.models.mission import MissionInventory, UserMission
+from app.v2.missions.services.mission_service import MissionService
 from app.v2.users.models.user import User
 from common.utils.get_user_id import get_user_id
 
@@ -72,3 +73,25 @@ async def update_mission_progress(
             user_level=user.level.user_level, level_up=level_up
         ),
     )
+
+
+@router.get("/get-user-missions")
+async def mission_test_handler(user_id: str = Depends(get_user_id)):
+
+    mission_service = MissionService()
+
+    # 1. 글 작성 미션 진행도 업데이트
+    await mission_service.update_mission_progress(
+        user_id=user_id, condition_type="post", increment=1
+    )
+
+    # 2. 레벨업 미션 진행도 업데이트
+    await MissionService().update_mission_progress(
+        user_id=user_id, condition_type="level-up", increment=0
+    )
+
+    action_data = {"time_check": "1", "post": "1", "level_up": "1"}
+    # 3. 특정 시간대 미션도 체크하여 진행
+    # if "time_check" in action_data:
+    #     await update_mission_progress(user_id, action_data["time_check"], increment=1)
+    # pass
