@@ -11,7 +11,6 @@ from app.v2.items.models.item import (
     ProductInventory,
     ItemInventoryProductInventory,
 )
-from app.v2.users.services.user_service import UserService
 
 
 class PaymentService:
@@ -87,3 +86,4 @@ class PaymentService:
                 raise ValueError(
                     f"Invalid item category for cheese payment: {item.item_category}"
                 )
+

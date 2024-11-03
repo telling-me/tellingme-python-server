@@ -8,3 +8,9 @@ class CheeseService:
         return await CheeseManager.get_total_cheese_amount_by_manager(
             cheese_manager_id=cheese_manager_id
         )
+
+    @classmethod
+    async def add_cheese(cls, cheese_manager_id: str, amount: int):
+        await CheeseManager.add_cheese(
+            cheese_manager_id=cheese_manager_id, amount=amount
+        )

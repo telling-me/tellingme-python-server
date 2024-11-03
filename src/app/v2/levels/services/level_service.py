@@ -17,7 +17,7 @@ class LevelService:
         )
 
     @classmethod
-    async def level_up(cls, user_id: str) -> dict:
+    async def level_up(cls, user_id: str) -> int:
         """
         유저가 레벨업 가능한지 확인 후, 레벨업 처리
         """
@@ -37,18 +37,29 @@ class LevelService:
             await Level.update_level_and_exp(
                 user_id=user_id, new_level=new_level, new_exp=new_exp
             )
+            return 1
+        return 0
+        #     return {
+        #         "status": "success",
+        #         "message": "레벨업 성공",
+        #         "new_level": new_level,
+        #         "remaining_exp": new_exp,
+        #     }
+        #
+        # return {
+        #     "status": "failure",
+        #     "message": "레벨업에 필요한 경험치가 부족합니다",
+        #     "current_level": level,
+        #     "current_exp": current_exp,
+        #     "required_exp": required_exp,
+        # }
 
-            return {
-                "status": "success",
-                "message": "레벨업 성공",
-                "new_level": new_level,
-                "remaining_exp": new_exp,
-            }
+    async def add_exp(self, user_id: str, exp: int) -> None:
+        level_dto = await self.get_level_info(user_id=user_id)
 
-        return {
-            "status": "failure",
-            "message": "레벨업에 필요한 경험치가 부족합니다",
-            "current_level": level,
-            "current_exp": current_exp,
-            "required_exp": required_exp,
-        }
+        current_exp = level_dto.current_exp
+        new_exp = current_exp + exp
+
+        await Level.update_level_and_exp(
+            user_id=user_id, new_level=level_dto.level, new_exp=new_exp
+        )

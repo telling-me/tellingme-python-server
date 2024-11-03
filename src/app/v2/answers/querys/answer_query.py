@@ -10,3 +10,11 @@ SELECT_ANSWER_BY_USER_UUID_QUERY = f"""
     AND date BETWEEN %s AND %s
     ORDER BY date DESC
     """
+
+SELECT_MOST_RECENT_ANSWER_BY_USER_UUID_QUERY = f"""
+    SELECT *
+    FROM answer
+    WHERE {USER_ID_QUERY}
+    ORDER BY created_at DESC
+    LIMIT 1
+"""

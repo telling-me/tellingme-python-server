@@ -2,6 +2,8 @@ from fastapi import APIRouter, HTTPException, Depends
 
 from tortoise.expressions import F
 
+from app.v2.items.models.item import RewardInventory
+from app.v2.likes.models.like import Like
 from app.v2.missions.dtos.request import MissionProgressRequest
 from app.v2.missions.dtos.response import (
     ApiResponse,
@@ -80,17 +82,10 @@ async def mission_test_handler(user_id: str = Depends(get_user_id)):
 
     mission_service = MissionService()
 
-    # 1. 글 작성 미션 진행도 업데이트
-    await mission_service.update_mission_progress(
-        user_id=user_id, condition_type="post", increment=1
-    )
+    await mission_service.update_mission_progress(user_id=user_id)
 
-    # 2. 레벨업 미션 진행도 업데이트
-    await MissionService().update_mission_progress(
-        user_id=user_id, condition_type="level-up", increment=0
-    )
+    await mission_service.validate_reward(reward_code="RW_FIRST_POST")
 
-    action_data = {"time_check": "1", "post": "1", "level_up": "1"}
     # 3. 특정 시간대 미션도 체크하여 진행
     # if "time_check" in action_data:
     #     await update_mission_progress(user_id, action_data["time_check"], increment=1)
