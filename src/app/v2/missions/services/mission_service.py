@@ -234,7 +234,6 @@ class MissionService:
         user_id: str,
         cheese_manager_id: str,
     ):
-
         for item_inventory_reward in item_inventory_rewards:
             item: ItemInventory = await item_inventory_reward.item_inventory
             quantity = item_inventory_reward.quantity

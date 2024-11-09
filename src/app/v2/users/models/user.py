@@ -1,14 +1,12 @@
-from typing import Optional, Any
+from datetime import datetime
 
-from fastapi import Depends
-from tortoise import fields, connections
+from tortoise import fields
 from tortoise.models import Model
 
 from app.v2.users.querys.user_query import (
     SELECT_USER_INFO_BY_USER_UUID_QUERY,
     SELECT_USER_PROFILE_BY_USER_ID_QUERY,
-    SELECT_USER_TELLER_CARD_ID_BY_USER_UUID_QUERY,
-    SELECT_USER_BY_UUID_QUERY,
+    UPDATE_PREMIUM_STATUS_QUERY,
 )
 from common.utils.query_executor import QueryExecutor
 
@@ -79,18 +77,8 @@ class User(Model):
         )
 
     @classmethod
-    async def get_teller_card_id_by_user_id(cls, user_id: str) -> int | None:
-        query = SELECT_USER_TELLER_CARD_ID_BY_USER_UUID_QUERY
-        value = user_id
-        return await QueryExecutor.execute_query(
-            query, values=value, fetch_type="single"
-        )
-
-    @classmethod
-    async def get_user_by_uuid(cls, user_id: str) -> Optional[dict[str, Any]]:
-        conn = connections.get("default")
-        result = await conn.execute_query_dict(SELECT_USER_BY_UUID_QUERY, [user_id])
-        if not result:
-            return None
-        user = result[0]
-        return user
+    async def set_is_premium(cls, user_id: str, is_premium: bool) -> None:
+        query = UPDATE_PREMIUM_STATUS_QUERY
+        current_time = datetime.now()
+        values = (int(is_premium), current_time, user_id)
+        await QueryExecutor.execute_query(query, values=values, fetch_type="single")

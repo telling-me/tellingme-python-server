@@ -1,7 +1,6 @@
 from fastapi import APIRouter, status
 
 from app.v2.badges.dtos.response import BadgeListResponseDTO
-from app.v2.badges.models.badge import Badge
 from app.v2.badges.services.badge_service import BadgeService
 
 router = APIRouter(prefix="/user/badge", tags=["Badge"])

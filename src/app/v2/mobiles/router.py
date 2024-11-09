@@ -5,7 +5,6 @@ from fastapi import APIRouter, status, HTTPException
 
 from app.v2.answers.services.answer_service import AnswerService
 
-from app.v2.badges.models.badge import Badge
 from app.v2.badges.services.badge_service import BadgeService
 from app.v2.cheese_managers.models.cheese_manager import CheeseManager
 from app.v2.cheese_managers.services.cheese_service import CheeseService
@@ -24,7 +23,6 @@ from app.v2.mobiles.dtos.teller_card_response import DataDTO, TellerCardResponse
 from app.v2.teller_cards.services.teller_card_service import TellerCardService
 from app.v2.users.dtos.user_info_dto import UserInfoDTO
 from app.v2.users.dtos.user_profile_dto import UserProfileDTO
-from app.v2.users.models.user import User
 from app.v2.users.services.user_service import UserService
 
 router = APIRouter(prefix="/mobiles", tags=["모바일 화면용 컨트롤러"])

@@ -26,3 +26,10 @@ SELECT_USER_TELLER_CARD_ID_BY_USER_UUID_QUERY = f"""
     FROM user u
     WHERE {USER_ID_QUERY}
 """
+
+UPDATE_PREMIUM_STATUS_QUERY = f"""
+    UPDATE `user` 
+    SET `is_premium` = %s,
+        `premium_started_at` = %s
+    WHERE {USER_ID_QUERY}
+    """

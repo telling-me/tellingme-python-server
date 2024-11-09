@@ -39,20 +39,6 @@ class LevelService:
             )
             return 1
         return 0
-        #     return {
-        #         "status": "success",
-        #         "message": "레벨업 성공",
-        #         "new_level": new_level,
-        #         "remaining_exp": new_exp,
-        #     }
-        #
-        # return {
-        #     "status": "failure",
-        #     "message": "레벨업에 필요한 경험치가 부족합니다",
-        #     "current_level": level,
-        #     "current_exp": current_exp,
-        #     "required_exp": required_exp,
-        # }
 
     async def add_exp(self, user_id: str, exp: int) -> None:
         level_dto = await self.get_level_info(user_id=user_id)
