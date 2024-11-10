@@ -1,12 +1,7 @@
 from fastapi import HTTPException, APIRouter
 from tortoise.exceptions import DoesNotExist
 
-from app.v2.items.models.item import (
-    ProductInventory,
-    ItemInventoryProductInventory,
-    ItemInventory,
-)
-from app.v2.purchases.dtos.requests import ReceiptRequest
+from app.v2.purchases.dtos.requests import ReceiptRequest, PurchaseRequest
 from app.v2.purchases.services.purchase_service import PurchaseService
 from app.v2.users.services.user_service import UserService
 
@@ -25,9 +20,10 @@ async def process_receipt(receipt: ReceiptRequest):
 
 
 @router.post("")
-async def process_purchase(product_code: str):
+async def process_purchase(request: PurchaseRequest):
     try:
-        user_id = "180a4e40-62f8-46be-b1eb-e7e3dd91cddf"
+        user_id = request.user_id
+        product_code = request.product_code
 
         item_inventory_products = await PurchaseService.validate_purchase(product_code)
 

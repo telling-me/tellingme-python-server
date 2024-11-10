@@ -1,13 +1,12 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter
 
 from app.v2.missions.services.mission_service import MissionService
-from common.utils.get_user_id import get_user_id
 
 router = APIRouter(prefix="/mission", tags=["Mission"])
 
 
 @router.get("/get-user-missions")
-async def mission_test_handler(user_id: str = Depends(get_user_id)):
+async def mission_test_handler(user_id: str):
 
     mission_service = MissionService()
 

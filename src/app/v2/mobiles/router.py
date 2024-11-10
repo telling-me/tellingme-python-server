@@ -38,9 +38,7 @@ async def mobile_main_handler():
     response_model=TellerCardResponseDTO,
     status_code=status.HTTP_200_OK,
 )
-async def mobile_teller_card_handler():
-    user_id = "180a4e40-62f8-46be-b1eb-e7e3dd91cddf"
-
+async def mobile_teller_card_handler(user_id: str):
     try:
         badges_task = BadgeService.get_badges_with_details_by_user_id(user_id)
         colors_task = ColorService.get_colors(user_id)
@@ -78,8 +76,7 @@ async def mobile_teller_card_handler():
     response_model=MyPageResponseDTO,
     status_code=status.HTTP_200_OK,
 )
-async def mobile_my_page_handler():
-    user_id = "180a4e40-62f8-46be-b1eb-e7e3dd91cddf"
+async def mobile_my_page_handler(user_id: str):
 
     user, answer_count, badge_count, teller_card, level = await asyncio.gather(
         UserService.get_user_profile(user_id=user_id),

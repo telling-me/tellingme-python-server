@@ -1,17 +1,22 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, status
 
-
+from app.v2.payments.dtos.request import PaymentRequestDTO
+from app.v2.payments.dtos.response import PaymentResponseDTO
 from app.v2.payments.services.payment_service import PaymentService
 from app.v2.users.services.user_service import UserService
 
 router = APIRouter(prefix="/payment", tags=["Payment"])
 
 
-# current_user: User = Depends(get_current_user)
-@router.post("")
-async def process_payment(product_code: str):
+@router.post(
+    "",
+    response_model=PaymentResponseDTO,
+    status_code=status.HTTP_200_OK,
+)
+async def process_payment(request: PaymentRequestDTO):
     try:
-        user_id = "180a4e40-62f8-46be-b1eb-e7e3dd91cddf"
+        user_id = request.user_id
+        product_code = request.productCode
 
         product, item_inventory_products = await PaymentService.validate_payment(
             product_code
@@ -22,8 +27,7 @@ async def process_payment(product_code: str):
         await PaymentService.process_cheese_payment(
             product, item_inventory_products, user_id, user["cheese_manager_id"]
         )
-
-        return {"message": "Payment successful", "product": product}
+        return PaymentResponseDTO.builder(product_code=product.product_code)
 
     except HTTPException as e:
         raise e
