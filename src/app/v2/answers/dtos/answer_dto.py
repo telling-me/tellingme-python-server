@@ -3,8 +3,5 @@ class RecordDto:
         self.count = count
 
     @classmethod
-    def builder(cls, count: int):
+    def builder(cls, count: int) -> "RecordDto":
         return cls(count)
-
-    def build(self):
-        return self

@@ -13,7 +13,7 @@ router = APIRouter(prefix="/payment", tags=["Payment"])
     response_model=PaymentResponseDTO,
     status_code=status.HTTP_200_OK,
 )
-async def process_payment(request: PaymentRequestDTO):
+async def process_payment(request: PaymentRequestDTO) -> PaymentResponseDTO:
     try:
         user_id = request.user_id
         product_code = request.productCode

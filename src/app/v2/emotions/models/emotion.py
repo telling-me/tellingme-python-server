@@ -1,9 +1,7 @@
 from tortoise import fields, models
 
 from app.v2.emotions.querys.emotion_query import (
-    INSERT_EMOTION_CODE_FOR_USER_QUERY,
-    SELECT_EMOTION_CODE_BY_USER_UUID_QUERY,
-)
+    INSERT_EMOTION_CODE_FOR_USER_QUERY, SELECT_EMOTION_CODE_BY_USER_UUID_QUERY)
 from common.utils.query_executor import QueryExecutor
 
 
@@ -40,4 +38,4 @@ class EmotionInventory(models.Model):
 
     @classmethod
     async def get_emotion_inventory(cls) -> list[dict]:
-        return cls.all().values("emotion_code", "emotion_name")
+        return await cls.all().values("emotion_code", "emotion_name")

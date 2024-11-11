@@ -40,8 +40,9 @@ class LevelService:
             return 1
         return 0
 
-    async def add_exp(self, user_id: str, exp: int) -> None:
-        level_dto = await self.get_level_info(user_id=user_id)
+    @classmethod
+    async def add_exp(cls, user_id: str, exp: int) -> None:
+        level_dto = await cls.get_level_info(user_id=user_id)
 
         current_exp = level_dto.current_exp
         new_exp = current_exp + exp

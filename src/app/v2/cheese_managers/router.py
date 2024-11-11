@@ -8,7 +8,7 @@ router = APIRouter(prefix="/cheese", tags=["Cheese"])
 
 
 @router.get("", response_model=CheeseResponseDTO, status_code=status.HTTP_200_OK)
-async def get_cheese_handler(user_id: str):
+async def get_cheese_handler(user_id: str) -> CheeseResponseDTO:
 
     user = await UserService.get_user_info(user_id=user_id)
     cheese_amount = await CheeseService.get_cheese_balance(user["cheese_manager_id"])

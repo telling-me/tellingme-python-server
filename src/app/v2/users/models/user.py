@@ -4,10 +4,8 @@ from tortoise import fields
 from tortoise.models import Model
 
 from app.v2.users.querys.user_query import (
-    SELECT_USER_INFO_BY_USER_UUID_QUERY,
-    SELECT_USER_PROFILE_BY_USER_ID_QUERY,
-    UPDATE_PREMIUM_STATUS_QUERY,
-)
+    SELECT_USER_INFO_BY_USER_UUID_QUERY, SELECT_USER_PROFILE_BY_USER_ID_QUERY,
+    UPDATE_PREMIUM_STATUS_QUERY)
 from common.utils.query_executor import QueryExecutor
 
 
@@ -61,7 +59,7 @@ class User(Model):
         table = "user"
 
     @classmethod
-    async def get_user_profile_by_user_id(cls, user_id: str) -> dict | None:
+    async def get_user_profile_by_user_id(cls, user_id: str) -> dict:
         query = SELECT_USER_PROFILE_BY_USER_ID_QUERY
         value = user_id
         return await QueryExecutor.execute_query(
@@ -69,7 +67,7 @@ class User(Model):
         )
 
     @classmethod
-    async def get_user_info_by_user_id(cls, user_id: str) -> dict | None:
+    async def get_user_info_by_user_id(cls, user_id: str) -> dict:
         query = SELECT_USER_INFO_BY_USER_UUID_QUERY
         value = user_id
         return await QueryExecutor.execute_query(

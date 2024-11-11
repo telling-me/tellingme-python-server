@@ -6,16 +6,16 @@ from app.v2.badges.services.badge_service import BadgeService
 from app.v2.cheese_managers.models.cheese_manager import CheeseManager
 from app.v2.colors.services.color_service import ColorService
 from app.v2.emotions.services.emotion_service import EmotionService
-from app.v2.items.models.item import (
-    ItemInventory,
-    ProductInventory,
-    ItemInventoryProductInventory,
-)
+from app.v2.items.models.item import (ItemInventory,
+                                      ItemInventoryProductInventory,
+                                      ProductInventory)
 
 
 class PaymentService:
     @staticmethod
-    async def validate_payment(product_code: str):
+    async def validate_payment(
+        product_code: str,
+    ) -> tuple[ProductInventory, list[ItemInventoryProductInventory]]:
         try:
             product = await ProductInventory.get(product_code=product_code)
 
@@ -45,8 +45,8 @@ class PaymentService:
         product: ProductInventory,
         item_inventory_products: list[ItemInventoryProductInventory],
         user_id: str,
-        cheese_manager_id: str,
-    ):
+        cheese_manager_id: int,
+    ) -> None:
         total_cheese = await CheeseManager.get_total_cheese_amount_by_manager(
             cheese_manager_id=cheese_manager_id
         )
@@ -86,4 +86,3 @@ class PaymentService:
                 raise ValueError(
                     f"Invalid item category for cheese payment: {item.item_category}"
                 )
-

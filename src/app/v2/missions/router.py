@@ -1,12 +1,13 @@
 from fastapi import APIRouter
 
+from app.v2.answers.models.answer import Answer
 from app.v2.missions.services.mission_service import MissionService
 
 router = APIRouter(prefix="/mission", tags=["Mission"])
 
 
 @router.get("/get-user-missions")
-async def mission_test_handler(user_id: str):
+async def mission_test_handler(user_id: str) -> None:
 
     mission_service = MissionService()
 

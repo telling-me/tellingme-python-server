@@ -1,8 +1,8 @@
 from fastapi import FastAPI
 from tortoise import Tortoise
 from tortoise.contrib.fastapi import register_tortoise
-from core.configs import settings
 
+from core.configs import settings
 
 TORTOISE_APP_MODELS = [
     "app.v2.questions.models.question",

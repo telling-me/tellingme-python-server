@@ -1,10 +1,10 @@
-from pydantic import BaseModel
 from typing import List, Optional
+
+from pydantic import BaseModel
 
 from app.v2.badges.dtos.badge_dto import BadgeDTO
 from app.v2.colors.dtos.color_dto import ColorCodeDTO
 from app.v2.levels.dtos.level_dto import LevelDTO
-
 from app.v2.users.dtos.user_info_dto import UserInfoDTO
 from common.base_models.base_dtos.base_response import BaseResponseDTO
 

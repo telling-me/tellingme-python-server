@@ -8,7 +8,7 @@ class UserMissionDTO(BaseModel):
     progress_count: int
 
     @classmethod
-    def builder(cls, user_mission) -> "UserMissionDTO":
+    def builder(cls, user_mission: dict) -> "UserMissionDTO":
         is_completed_raw = user_mission.get("is_completed")
         is_completed = (
             bool(int.from_bytes(is_completed_raw, byteorder="big"))

@@ -2,12 +2,9 @@ from tortoise import fields
 from tortoise.models import Model
 
 from app.v2.badges.querys.badge_query import (
-    SELECT_BADGE_BY_USER_UUID_QUERY,
+    INSERT_BADGE_CODE_FOR_USER_QUERY, SELECT_BADGE_BY_USER_UUID_QUERY,
     SELECT_BADGE_CODE_BY_USER_UUID_QUERY,
-    INSERT_BADGE_CODE_FOR_USER_QUERY,
-    SELECT_BADGE_COUNT_BY_USER_UUID_QUERY,
-)
-
+    SELECT_BADGE_COUNT_BY_USER_UUID_QUERY)
 from common.utils.query_executor import QueryExecutor
 
 

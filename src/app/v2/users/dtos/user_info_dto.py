@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+
 from app.v2.teller_cards.dtos.teller_card_dto import TellerCardDTO
 
 

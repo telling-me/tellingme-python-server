@@ -1,24 +1,22 @@
+import httpx
+from fastapi import HTTPException
 from tortoise.exceptions import DoesNotExist
 
 from app.v2.cheese_managers.services.cheese_service import CheeseService
-from app.v2.items.models.item import (
-    ProductInventory,
-    ItemInventory,
-    ItemInventoryProductInventory,
-)
+from app.v2.items.models.item import (ItemInventory,
+                                      ItemInventoryProductInventory,
+                                      ProductInventory)
 from app.v2.purchases.models.purchase_history import PurchaseHistory
 from app.v2.users.services.user_service import UserService
-import httpx
-from fastapi import HTTPException
 
 
 class PurchaseService:
     @staticmethod
-    async def process_krw_payment(product: ProductInventory, quantity: int):
+    async def process_krw_payment(product: ProductInventory, quantity: int) -> None:
         print(f"Processing KRW payment: {product.price * quantity} KRW")
         # 여기에 실제 KRW 결제 처리 로직 구현
 
-    async def validate_receipt(self, receipt_data: str, user_id: str):
+    async def validate_receipt(self, receipt_data: str, user_id: str) -> dict:
         url = "https://buy.itunes.apple.com/verifyReceipt"  # sandbox: "https://sandbox.itunes.apple.com/verifyReceipt"
         payload = {
             "receipt-data": receipt_data,
@@ -35,7 +33,7 @@ class PurchaseService:
                 status_code=500, detail="Failed to connect to Apple server"
             )
 
-    async def _handle_receipt_response(self, response_data: dict, user_id: str):
+    async def _handle_receipt_response(self, response_data: dict, user_id: str) -> dict:
         if response_data.get("status") == 0:
             in_app_purchase = response_data.get("receipt", {}).get("in_app", [])
             if in_app_purchase:
@@ -46,7 +44,8 @@ class PurchaseService:
         else:
             raise HTTPException(status_code=400, detail="Invalid receipt")
 
-    async def _save_purchase_history(user_id: bytes, purchase_info: dict):
+    @classmethod
+    async def _save_purchase_history(cls, user_id: str, purchase_info: dict) -> dict:
         receipt_id = purchase_info.get("transaction_id")
         product_code = purchase_info.get("product_id")
         status = "completed"
@@ -67,7 +66,9 @@ class PurchaseService:
         }
 
     @staticmethod
-    async def validate_purchase(product_code: str):
+    async def validate_purchase(
+        product_code: str,
+    ) -> list[ItemInventoryProductInventory]:
         try:
             product = await ProductInventory.get(product_code=product_code)
 
@@ -94,7 +95,7 @@ class PurchaseService:
         item_inventory_products: list[ItemInventoryProductInventory],
         user_id: str,
         cheese_manager_id: str,
-    ):
+    ) -> None:
         for item_inventory_product in item_inventory_products:
             item: ItemInventory = await item_inventory_product.item_inventory
             quantity = item_inventory_product.quantity

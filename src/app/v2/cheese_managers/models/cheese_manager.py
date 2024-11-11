@@ -14,7 +14,7 @@ class CheeseManager(Model):
         table = "cheese_manager"  # Database table name
 
     @staticmethod
-    async def get_total_cheese_amount_by_manager(cheese_manager_id: int):
+    async def get_total_cheese_amount_by_manager(cheese_manager_id: int) -> int:
         result = (
             await CheeseHistory.filter(
                 Q(status=CheeseStatus.CAN_USE) | Q(status=CheeseStatus.USING),
@@ -27,7 +27,7 @@ class CheeseManager(Model):
         return result[0].get("total_cheese_amount", 0)
 
     @staticmethod
-    async def use_cheese(cheese_manager_id: int, amount: int):
+    async def use_cheese(cheese_manager_id: int, amount: int) -> None:
         using_cheese = await CheeseHistory.filter(
             status=CheeseStatus.USING, cheese_manager_id=cheese_manager_id
         ).order_by("cheese_history_id")
@@ -66,13 +66,14 @@ class CheeseManager(Model):
         if remaining_amount > 0:
             raise ValueError("Not enough cheese to complete the transaction")
 
-    async def add_cheese(self, amount: int):
+    async def add_cheese(self, amount: int) -> None:
         await CheeseHistory.create(
             status=CheeseStatus.CAN_USE,
             current_amount=amount,
             starting_amount=amount,
             cheese_manager_id=self.cheese_manager_id,
         )
+
 
 class CheeseHistory(Model):
     cheese_history_id = fields.BigIntField(pk=True)

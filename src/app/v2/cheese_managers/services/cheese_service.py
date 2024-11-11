@@ -10,7 +10,7 @@ class CheeseService:
         )
 
     @classmethod
-    async def add_cheese(cls, cheese_manager_id: str, amount: int):
+    async def add_cheese(cls, cheese_manager_id: str, amount: int) -> None:
         await CheeseManager.add_cheese(
             cheese_manager_id=cheese_manager_id, amount=amount
         )

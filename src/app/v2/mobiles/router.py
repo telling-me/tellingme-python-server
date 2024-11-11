@@ -1,25 +1,17 @@
 import asyncio
 
-from fastapi import APIRouter, status, HTTPException
-
+from fastapi import APIRouter, HTTPException, status
 
 from app.v2.answers.services.answer_service import AnswerService
-
 from app.v2.badges.services.badge_service import BadgeService
 from app.v2.cheese_managers.models.cheese_manager import CheeseManager
 from app.v2.cheese_managers.services.cheese_service import CheeseService
-
 from app.v2.colors.services.color_service import ColorService
-
 from app.v2.levels.services.level_service import LevelService
-
-from app.v2.mobiles.dtos.mypage_response import (
-    UserProfileWithLevel,
-    MyPageResponseDTO,
-)
-from app.v2.mobiles.dtos.teller_card_response import DataDTO, TellerCardResponseDTO
-
-
+from app.v2.mobiles.dtos.mypage_response import (MyPageResponseDTO,
+                                                 UserProfileWithLevel)
+from app.v2.mobiles.dtos.teller_card_response import (DataDTO,
+                                                      TellerCardResponseDTO)
 from app.v2.teller_cards.services.teller_card_service import TellerCardService
 from app.v2.users.dtos.user_info_dto import UserInfoDTO
 from app.v2.users.dtos.user_profile_dto import UserProfileDTO
@@ -29,7 +21,7 @@ router = APIRouter(prefix="/mobiles", tags=["모바일 화면용 컨트롤러"])
 
 
 @router.post("/main")
-async def mobile_main_handler():
+async def mobile_main_handler() -> None:
     pass
 
 
@@ -38,7 +30,7 @@ async def mobile_main_handler():
     response_model=TellerCardResponseDTO,
     status_code=status.HTTP_200_OK,
 )
-async def mobile_teller_card_handler(user_id: str):
+async def mobile_teller_card_handler(user_id: str) -> TellerCardResponseDTO:
     try:
         badges_task = BadgeService.get_badges_with_details_by_user_id(user_id)
         colors_task = ColorService.get_colors(user_id)
@@ -76,7 +68,7 @@ async def mobile_teller_card_handler(user_id: str):
     response_model=MyPageResponseDTO,
     status_code=status.HTTP_200_OK,
 )
-async def mobile_my_page_handler(user_id: str):
+async def mobile_my_page_handler(user_id: str) -> MyPageResponseDTO:
 
     user, answer_count, badge_count, teller_card, level = await asyncio.gather(
         UserService.get_user_profile(user_id=user_id),

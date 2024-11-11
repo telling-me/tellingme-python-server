@@ -1,8 +1,8 @@
+import logging
+
 from fastapi import FastAPI
 
 from common.post_construct import post_construct
-
-import logging
 
 # 로깅 설정
 logging.basicConfig(level=logging.DEBUG)
@@ -17,7 +17,7 @@ post_construct(app)
 
 
 @app.get("/health_check")
-def health_check():
+def health_check() -> dict[str, str]:
     return {"message": "Hello World"}
 
 

@@ -24,6 +24,13 @@ mypy = "^1.11.2"
 black = "^24.8.0"
 pytest = "^8.3.3"
 pytest-asyncio = "^0.24.0"
+mypy-extensions = "^1.0.0"
+
+[tool.mypy]
+files = "src"  # 타입 체크할 파일 경로
+disallow_untyped_calls = true  # 타입이 없는 함수 호출 금지
+disallow_untyped_defs = true   # 타입이 없는 함수 정의 금지
+ignore_missing_imports = true # 누락된 import 무시
 
 [build-system]
 requires = ["poetry-core"]

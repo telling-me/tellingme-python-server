@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+
 from common.base_models.base_dtos.base_response import BaseResponseDTO
 
 

@@ -1,8 +1,7 @@
 from fastapi import APIRouter, status
 
-from app.v2.teller_cards.dtos.response import TellerCardResponseDTO
 from app.v2.teller_cards.dtos.request import TellerCardRequestDTO
-
+from app.v2.teller_cards.dtos.response import TellerCardResponseDTO
 from app.v2.teller_cards.services.teller_card_service import TellerCardService
 
 router = APIRouter(prefix="/tellercard", tags=["TellerCard"])
@@ -17,8 +16,8 @@ async def patch_teller_card_handler(
     body: TellerCardRequestDTO,
 ) -> TellerCardResponseDTO:
     user_id = body.user_id
-    badge_code = (body.badgeCode,)
-    color_code = (body.colorCode,)
+    badge_code = body.badgeCode
+    color_code = body.colorCode
 
     await TellerCardService.patch_teller_card(
         user_id=user_id, badge_code=badge_code, color_code=color_code

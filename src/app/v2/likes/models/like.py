@@ -1,7 +1,8 @@
 from tortoise import fields
 from tortoise.models import Model
 
-from app.v2.likes.querys.like_query import SELECT_UNIQUE_LIKES_COUNT_BY_USER_TODAY_QUERY
+from app.v2.likes.querys.like_query import \
+    SELECT_UNIQUE_LIKES_COUNT_BY_USER_TODAY_QUERY
 from common.utils.query_executor import QueryExecutor
 
 

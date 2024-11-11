@@ -1,7 +1,7 @@
-from fastapi import HTTPException, APIRouter
+from fastapi import APIRouter, HTTPException
 from tortoise.exceptions import DoesNotExist
 
-from app.v2.purchases.dtos.requests import ReceiptRequest, PurchaseRequest
+from app.v2.purchases.dtos.requests import PurchaseRequest, ReceiptRequest
 from app.v2.purchases.services.purchase_service import PurchaseService
 from app.v2.users.services.user_service import UserService
 
@@ -9,7 +9,7 @@ router = APIRouter(prefix="/purchase", tags=["Purchase"])
 
 
 @router.post("/process-receipt/")
-async def process_receipt(receipt: ReceiptRequest):
+async def process_receipt(receipt: ReceiptRequest) -> dict:
     if not receipt.receipt_data or not receipt.user_id:
         raise HTTPException(status_code=400, detail="Missing data")
     purchase_service = PurchaseService()
@@ -20,7 +20,7 @@ async def process_receipt(receipt: ReceiptRequest):
 
 
 @router.post("")
-async def process_purchase(request: PurchaseRequest):
+async def process_purchase(request: PurchaseRequest) -> dict[str, str]:
     try:
         user_id = request.user_id
         product_code = request.product_code

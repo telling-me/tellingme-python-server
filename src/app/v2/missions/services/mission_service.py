@@ -1,4 +1,4 @@
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
 
 from fastapi import HTTPException
 from tortoise.exceptions import DoesNotExist
@@ -9,21 +9,19 @@ from app.v2.answers.services.answer_service import AnswerService
 from app.v2.badges.services.badge_service import BadgeService
 from app.v2.cheese_managers.services.cheese_service import CheeseService
 from app.v2.colors.services.color_service import ColorService
-from app.v2.items.models.item import (
-    RewardInventory,
-    ItemInventoryRewardInventory,
-    ItemInventory,
-)
+from app.v2.items.models.item import (ItemInventory,
+                                      ItemInventoryRewardInventory,
+                                      RewardInventory)
 from app.v2.levels.services.level_service import LevelService
 from app.v2.likes.models.like import Like
 from app.v2.missions.dtos.mission_dto import UserMissionDTO
-from app.v2.missions.models.mission import UserMission, MissionInventory
+from app.v2.missions.models.mission import MissionInventory, UserMission
 from app.v2.users.services.user_service import UserService
 
 
 class MissionService:
     @staticmethod
-    async def get_user_missions(user_id: str):
+    async def get_user_missions(user_id: str) -> list[UserMissionDTO]:
         user_mission_raw = await UserMission.get_user_missions_by_condition_type(
             user_id
         )
@@ -37,7 +35,7 @@ class MissionService:
         mission_code: str,
         new_progress_count: int,
         is_completed: bool,
-    ):
+    ) -> None:
         await UserMission.update_user_mission_progress(
             user_id=user_id,
             mission_code=mission_code,
@@ -45,7 +43,7 @@ class MissionService:
             is_completed=is_completed,
         )
 
-    async def update_mission_progress(self, user_id: str):
+    async def update_mission_progress(self, user_id: str) -> None:
         user = await UserService.get_user_info(user_id=user_id)
         user_missions = await self.get_user_missions(user_id)
         missions = await MissionInventory.all()
@@ -83,7 +81,7 @@ class MissionService:
                 is_completed=user_mission.is_completed,
             )
 
-    async def evaluate_mission_condition(self, user_id, mission_code):
+    async def evaluate_mission_condition(self, user_id: str, mission_code: str) -> int:
         user_level_data = await LevelService.get_level_info(user_id)
         current_level = user_level_data.level
 
@@ -130,33 +128,35 @@ class MissionService:
         return 0
 
     @staticmethod
-    async def check_first_post(user_id) -> bool:
+    async def check_first_post(user_id: str) -> bool:
         post_count_raw = await Answer.get_answer_count_by_user_id(user_id=user_id)
         return post_count_raw.get("answer_count", 0) > 0
 
     @staticmethod
-    async def check_post_count_range(user_id, min_count, max_count):
+    async def check_post_count_range(
+        user_id: str, min_count: int, max_count: int
+    ) -> bool:
         post_count = await Answer.get_answer_count_by_user_id(user_id=user_id)
-        return min_count <= post_count <= max_count
+        return min_count <= post_count.get("answer_count", 0) <= max_count
 
     @staticmethod
-    async def check_post_count_min(user_id, min_count):
+    async def check_post_count_min(user_id: str, min_count: int) -> bool:
         post_count = await Answer.get_answer_count_by_user_id(user_id=user_id)
-        return post_count >= min_count
+        return post_count.get("answer_count", 0) >= min_count
 
     @staticmethod
-    async def check_long_answer(user_id) -> bool:
+    async def check_long_answer(user_id: str) -> bool:
         recent_answer = await Answer.get_most_recent_answer_by_user_id(user_id=user_id)
         return len(recent_answer["content"]) >= 280 if recent_answer else False
 
     @staticmethod
-    async def check_consecutive_days(user_id) -> bool:
+    async def check_consecutive_days(user_id: str) -> bool:
         record_dto = await AnswerService.get_answer_record(user_id)
         consecutive_days = record_dto.count
         return consecutive_days >= 7
 
     @staticmethod
-    async def check_early_morning_posts(user_id) -> bool:
+    async def check_early_morning_posts(user_id: str) -> bool:
         recent_answer = await Answer.get_most_recent_answer_by_user_id(user_id=user_id)
         if recent_answer:
             answer_time = recent_answer.get("created_time")
@@ -164,7 +164,7 @@ class MissionService:
         return False
 
     @staticmethod
-    async def check_cheese_total(user_id) -> bool:
+    async def check_cheese_total(user_id: str) -> bool:
         user = await UserService.get_user_info(user_id=user_id)
         cheese_amount = await CheeseService.get_cheese_balance(
             user["cheese_manager_id"]
@@ -183,7 +183,7 @@ class MissionService:
         return start_date <= now <= end_date
 
     @staticmethod
-    async def check_three_likes_different_posts(user_id) -> bool:
+    async def check_three_likes_different_posts(user_id: str) -> bool:
         like_raw = await Like.get_unique_likes_today(user_id)
         like_count = like_raw.get("unique_likes", 0)
         return like_count >= 3
@@ -193,23 +193,20 @@ class MissionService:
         user_id: str,
         reward_code: str,
         cheese_manager_id: str,
-    ):
+    ) -> None:
 
         # 보상 검증
-        reward, item_inventory_rewards = await self.validate_reward(
-            reward_code=reward_code
-        )
+        item_inventory_rewards = await self.validate_reward(reward_code=reward_code)
 
         # 보상 지급
         await self.process_reward(
-            reward_code=reward.reward_code,
             item_inventory_rewards=item_inventory_rewards,
             user_id=user_id,
             cheese_manager_id=cheese_manager_id,
         )
 
     @staticmethod
-    async def validate_reward(reward_code: str):
+    async def validate_reward(reward_code: str) -> list[ItemInventoryRewardInventory]:
         try:
             # reward_code를 기반으로 RewardInventory에서 보상 조회
             reward = await RewardInventory.get(reward_code=reward_code)
@@ -221,7 +218,7 @@ class MissionService:
                 raise HTTPException(
                     status_code=404, detail="No inventory found for this reward."
                 )
-            return reward, item_inventory_rewards
+            return item_inventory_rewards
 
         except DoesNotExist:
             raise HTTPException(status_code=404, detail="Reward not found.")
@@ -233,7 +230,7 @@ class MissionService:
         item_inventory_rewards: list[ItemInventoryRewardInventory],
         user_id: str,
         cheese_manager_id: str,
-    ):
+    ) -> None:
         for item_inventory_reward in item_inventory_rewards:
             item: ItemInventory = await item_inventory_reward.item_inventory
             quantity = item_inventory_reward.quantity
@@ -253,7 +250,7 @@ class MissionService:
                     cheese_manager_id=cheese_manager_id, amount=quantity
                 )
             elif item.item_category == "POINT":
-                await LevelService.add_exp(user_id=user_id, point=quantity)
+                await LevelService.add_exp(user_id=user_id, exp=quantity)
             else:
                 raise ValueError(
                     f"Invalid item category for reward: {item.item_category}"

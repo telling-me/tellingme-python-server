@@ -13,7 +13,7 @@ class BadgeService:
         await Badge.add_badge(user_id=user_id, badge_code=badge_code)
 
     @classmethod
-    async def get_badges_with_details_by_user_id(cls, user_id: str) -> list[dict]:
+    async def get_badges_with_details_by_user_id(cls, user_id: str) -> list[BadgeDTO]:
         badges_raw = await Badge.get_badges_with_details_by_user_id(user_id=user_id)
         return [BadgeDTO.builder(badge) for badge in badges_raw]
 

@@ -6,7 +6,7 @@ from app.v2.answers.models.answer import Answer
 
 class AnswerService:
     @classmethod
-    async def get_answer_count(cls, user_id: str):
+    async def get_answer_count(cls, user_id: str) -> int:
         answer_count_raw = await Answer.get_answer_count_by_user_id(user_id=user_id)
         return answer_count_raw["answer_count"]
 
@@ -29,4 +29,4 @@ class AnswerService:
                 else:
                     break
 
-        return RecordDto.builder(count=record).build()
+        return RecordDto.builder(count=record)

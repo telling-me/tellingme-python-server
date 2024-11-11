@@ -1,6 +1,6 @@
 # models.py
-from tortoise.models import Model
 from tortoise import fields
+from tortoise.models import Model
 
 
 # models.py (계속)
@@ -15,4 +15,3 @@ class PurchaseHistory(Model):
         table = "purchase_history"
         unique_together = ("receipt_id",)
         indexes = ["user_id"]
-

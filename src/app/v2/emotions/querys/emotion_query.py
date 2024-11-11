@@ -1,6 +1,5 @@
 from app.v2.users.querys.user_query import USER_ID_QUERY
 
-
 SELECT_EMOTION_CODE_BY_USER_UUID_QUERY = f"""
     SELECT emotion_code 
     FROM emotion 
