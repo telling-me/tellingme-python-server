@@ -4,7 +4,7 @@ from pydantic import BaseModel
 
 from app.v2.badges.dtos.badge_dto import BadgeDTO
 from app.v2.colors.dtos.color_dto import ColorCodeDTO
-from app.v2.levels.dtos.level_dto import LevelDTO
+from app.v2.levels.dtos.level_dto import LevelDTO, LevelInfoDTO
 from app.v2.users.dtos.user_info_dto import UserInfoDTO
 from common.base_models.base_dtos.base_response import BaseResponseDTO
 
@@ -13,7 +13,7 @@ class DataDTO(BaseModel):
     badges: List[BadgeDTO]
     colors: List[ColorCodeDTO]
     userInfo: UserInfoDTO
-    level: LevelDTO
+    levelInfo: LevelInfoDTO
 
     @classmethod
     def builder(
@@ -21,13 +21,13 @@ class DataDTO(BaseModel):
         badges: List[BadgeDTO],
         colors: List[ColorCodeDTO],
         userInfo: UserInfoDTO,
-        level: LevelDTO,
+        levelInfo: LevelInfoDTO,
     ) -> "DataDTO":
         return cls(
             badges=badges,
             colors=colors,
             userInfo=userInfo,
-            level=level,
+            levelInfo=levelInfo,
         )
 
 

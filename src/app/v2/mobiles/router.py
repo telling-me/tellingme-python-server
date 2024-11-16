@@ -34,7 +34,7 @@ async def mobile_teller_card_handler(user_id: str) -> TellerCardResponseDTO:
     try:
         badges_task = BadgeService.get_badges_with_details_by_user_id(user_id)
         colors_task = ColorService.get_colors(user_id)
-        level_info_task = LevelService.get_level_info(user_id)
+        level_info_task = LevelService.get_level_info_add_answer_days(user_id)
         teller_card_task = TellerCardService.get_teller_card(user_id)
         user_info_task = UserService.get_user_info(user_id)
 
@@ -53,7 +53,7 @@ async def mobile_teller_card_handler(user_id: str) -> TellerCardResponseDTO:
     )
 
     data = DataDTO.builder(
-        badges=badges, colors=colors, userInfo=user_info, level=level_info
+        badges=badges, colors=colors, userInfo=user_info, levelInfo=level_info
     )
 
     return TellerCardResponseDTO(
@@ -75,7 +75,7 @@ async def mobile_my_page_handler(user_id: str) -> MyPageResponseDTO:
         AnswerService.get_answer_count(user_id=user_id),
         BadgeService.get_badge_count(user_id=user_id),
         TellerCardService.get_teller_card(user_id=user_id),
-        LevelService.get_level_info(user_id),
+        LevelService.get_level_info_add_answer_days(user_id),
     )
 
     cheese_amount = await CheeseManager.get_total_cheese_amount_by_manager(

@@ -151,8 +151,7 @@ class MissionService:
 
     @staticmethod
     async def check_consecutive_days(user_id: str) -> bool:
-        record_dto = await AnswerService.get_answer_record(user_id)
-        consecutive_days = record_dto.count
+        consecutive_days = await AnswerService.get_answer_record(user_id)
         return consecutive_days >= 7
 
     @staticmethod

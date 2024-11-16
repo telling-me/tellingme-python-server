@@ -3,29 +3,21 @@ from tortoise.models import Model
 
 from app.v2.levels.querys.level_query import (
     SELECT_USER_EXP_QUERY, SELECT_USER_LEVEL_AND_EXP_BY_USER_UUID_QUERY,
-    UPDATE_USER_LEVEL_AND_EXP_QUERY)
+    SELECT_USER_LEVEL_AND_REQUIRED_EXP_QUERY, UPDATE_USER_LEVEL_AND_EXP_QUERY)
 from common.utils.query_executor import QueryExecutor
 
 
 class Level(Model):
-    level_id = fields.BigIntField(pk=True)  # BIGINT auto_increment equivalent
-    user_exp = fields.IntField()  # Experience points field
-    user_level = fields.IntField()  # User level field
+    level_id = fields.BigIntField(pk=True)
+    user_exp = fields.IntField()
+    user_level = fields.IntField()
 
     class Meta:
         table = "level"
 
     @classmethod
-    async def get_level_info_by_user_id(cls, user_id: str) -> dict | None:
-        query = SELECT_USER_LEVEL_AND_EXP_BY_USER_UUID_QUERY
-        value = user_id
-        return await QueryExecutor.execute_query(
-            query, values=value, fetch_type="single"
-        )
-
-    @classmethod
-    async def get_required_exp_by_user_id(cls, user_id: str) -> dict | None:
-        query = SELECT_USER_EXP_QUERY
+    async def get_level_info(cls, user_id: str) -> dict | None:
+        query = SELECT_USER_LEVEL_AND_REQUIRED_EXP_QUERY
         value = user_id
         return await QueryExecutor.execute_query(
             query, values=(value,), fetch_type="single"

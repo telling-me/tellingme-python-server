@@ -1,6 +1,5 @@
 from datetime import datetime, timedelta
 
-from app.v2.answers.dtos.answer_dto import RecordDto
 from app.v2.answers.models.answer import Answer
 
 
@@ -11,7 +10,7 @@ class AnswerService:
         return answer_count_raw["answer_count"]
 
     @classmethod
-    async def get_answer_record(cls, user_id: str) -> "RecordDto":
+    async def get_answer_record(cls, user_id: str) -> int:
         end_date = datetime.now()
         start_date = end_date - timedelta(days=100)
 
@@ -29,4 +28,9 @@ class AnswerService:
                 else:
                     break
 
-        return RecordDto.builder(count=record)
+        return record
+
+    @classmethod
+    async def calculate_consecutive_answer_points(cls, user_id: str) -> int:
+        consecutive_days = await cls.get_answer_record(user_id=user_id)
+        return min(consecutive_days, 10)
