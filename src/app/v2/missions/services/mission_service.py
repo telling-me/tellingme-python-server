@@ -1,3 +1,4 @@
+import asyncio
 from datetime import datetime, timedelta, timezone
 
 from fastapi import HTTPException
@@ -9,9 +10,7 @@ from app.v2.answers.services.answer_service import AnswerService
 from app.v2.badges.services.badge_service import BadgeService
 from app.v2.cheese_managers.services.cheese_service import CheeseService
 from app.v2.colors.services.color_service import ColorService
-from app.v2.items.models.item import (ItemInventory,
-                                      ItemInventoryRewardInventory,
-                                      RewardInventory)
+from app.v2.items.models.item import ItemInventory, ItemInventoryRewardInventory, RewardInventory
 from app.v2.levels.services.level_service import LevelService
 from app.v2.likes.models.like import Like
 from app.v2.missions.dtos.mission_dto import UserMissionDTO
@@ -22,12 +21,8 @@ from app.v2.users.services.user_service import UserService
 class MissionService:
     @staticmethod
     async def get_user_missions(user_id: str) -> list[UserMissionDTO]:
-        user_mission_raw = await UserMission.get_user_missions_by_condition_type(
-            user_id
-        )
-        return [
-            UserMissionDTO.builder(user_mission) for user_mission in user_mission_raw
-        ]
+        user_mission_raw = await UserMission.get_user_missions_by_condition_type(user_id)
+        return [UserMissionDTO.builder(user_mission) for user_mission in user_mission_raw]
 
     @staticmethod
     async def _update_user_mission_progress(
@@ -44,87 +39,77 @@ class MissionService:
         )
 
     async def update_mission_progress(self, user_id: str) -> None:
-        user = await UserService.get_user_info(user_id=user_id)
-        user_missions = await self.get_user_missions(user_id)
-        missions = await MissionInventory.all()
+
+        user, user_missions, missions = await asyncio.gather(
+            UserService.get_user_info(user_id=user_id), self.get_user_missions(user_id=user_id), MissionInventory.all()
+        )
+
+        cheese_manager_id = user["cheese_manager_id"]
         mission_dict = {mission.mission_code: mission for mission in missions}
+        level_up_mission = None
 
         for user_mission in user_missions:
-            if user_mission.is_completed:
-                continue
-
-            mission = mission_dict.get(user_mission.mission_code)
-
-            if not mission:
-                continue
-
-            # 조건에 따른 진행도 업데이트
-            increment = await self.evaluate_mission_condition(
-                user_id, user_mission.mission_code
-            )
-            user_mission.progress_count += increment
-
-            # 3. 목표 도달 여부 확인 & 4.보상 처리
-            if user_mission.progress_count >= mission.target_count:
-                user_mission.is_completed = True
-                await self.reward_user_for_mission(
-                    user_id=user_id,
-                    reward_code=mission.reward_code,
-                    cheese_manager_id=user["cheese_manager_id"],
+            if user_mission.mission_code == "MS_LV_UP":
+                level_up_mission = user_mission
+            else:
+                await self._process_single_mission(
+                    user_mission, mission_dict, cheese_manager_id=cheese_manager_id, user_id=user_id
                 )
 
-            # 5. 미션 진행도 업데이트
-            await self._update_user_mission_progress(
-                user_id=user_id,
-                mission_code=user_mission.mission_code,
-                new_progress_count=user_mission.progress_count,
-                is_completed=user_mission.is_completed,
+        if level_up_mission:
+            await self._process_single_mission(
+                level_up_mission, mission_dict, cheese_manager_id=cheese_manager_id, user_id=user_id
             )
 
+    async def _process_single_mission(
+        self, user_mission: UserMissionDTO, mission_dict: dict, cheese_manager_id: dict, user_id: str
+    ) -> None:
+        mission = mission_dict.get(user_mission.mission_code)
+
+        if user_mission.is_completed or not mission:
+            return
+
+        increment = await self.evaluate_mission_condition(user_id, user_mission.mission_code)
+        user_mission.progress_count += increment
+
+        if user_mission.progress_count >= mission.target_count:
+            user_mission.is_completed = True
+            await self.reward_user_for_mission(
+                user_id=user_id,
+                reward_code=mission.reward_code,
+                cheese_manager_id=cheese_manager_id,
+                mission_code=user_mission.mission_code,
+            )
+
+        # 진행도 업데이트
+        await self._update_user_mission_progress(
+            user_id=user_id,
+            mission_code=user_mission.mission_code,
+            new_progress_count=user_mission.progress_count,
+            is_completed=user_mission.is_completed,
+        )
+
     async def evaluate_mission_condition(self, user_id: str, mission_code: str) -> int:
-        user_level_data = await LevelService.get_level_info(user_id)
-        current_level = user_level_data.level
-
-        if mission_code == "MS_POST_FIRST" and await self.check_first_post(user_id):
+        if mission_code == "MS_BADGE_POST_FIRST" and await self.check_first_post(user_id):
             return 1
-        elif mission_code == "MS_POST_2_5" and await self.check_post_count_range(
-            user_id, 2, 5
-        ):
+        elif mission_code == "MS_SINGLE_POST_2_5" and await self.check_post_count_range(user_id, 2, 5):
             return 1
-        elif mission_code == "MS_POST_280_CHAR" and await self.check_long_answer(
-            user_id
-        ):
+        elif mission_code == "MS_BADGE_POST_280_CHAR" and await self.check_long_answer(user_id):
             return 1
-        elif mission_code == "MS_POST_GENERAL" and await self.check_post_count_min(
-            user_id, 6
-        ):
+        elif mission_code == "MS_DAILY_POST_GENERAL" and await self.check_post_count_min(user_id, 6):
             return 1
-        elif (
-            mission_code == "MS_POST_CONSECUTIVE_7"
-            and await self.check_consecutive_days(user_id)
-        ):
+        elif mission_code == "MS_BADGE_POST_CONSECUTIVE_7" and await self.check_consecutive_days(user_id):
             return 1
-        elif mission_code == "MS_POST_EARLY_3" and await self.check_early_morning_posts(
-            user_id
-        ):
+        elif mission_code == "MS_BADGE_POST_EARLY_3" and await self.check_early_morning_posts(user_id):
             return 1
-        elif mission_code == "MS_CHEESE_TOTAL_50" and await self.check_cheese_total(
-            user_id
-        ):
+        elif mission_code == "MS_BADGE_CHEESE_TOTAL_50" and await self.check_cheese_total(user_id):
             return 1
-        elif mission_code == "MS_CHRISTMAS" and await self.check_christmas_period():
+        elif mission_code == "MS_BADGE_CHRISTMAS" and await self.check_christmas_period():
             return 1
-
-        elif (
-            mission_code == "MS_LIKE_3_DIFF_POST"
-            and await self.check_three_likes_different_posts(user_id)
-        ):
+        elif mission_code == "MS_DAILY_LIKE_3_PER_DAY" and await self.check_three_likes_different_posts(user_id):
             return 1
-        elif mission_code == f"MS_LV_{current_level}" and await LevelService.level_up(
-            user_id=user_id
-        ):
+        elif mission_code == f"MS_LV_UP" and await LevelService.level_up(user_id=user_id):
             return 1
-
         return 0
 
     @staticmethod
@@ -133,9 +118,7 @@ class MissionService:
         return post_count_raw.get("answer_count", 0) > 0
 
     @staticmethod
-    async def check_post_count_range(
-        user_id: str, min_count: int, max_count: int
-    ) -> bool:
+    async def check_post_count_range(user_id: str, min_count: int, max_count: int) -> bool:
         post_count = await Answer.get_answer_count_by_user_id(user_id=user_id)
         return min_count <= post_count.get("answer_count", 0) <= max_count
 
@@ -165,9 +148,7 @@ class MissionService:
     @staticmethod
     async def check_cheese_total(user_id: str) -> bool:
         user = await UserService.get_user_info(user_id=user_id)
-        cheese_amount = await CheeseService.get_cheese_balance(
-            user["cheese_manager_id"]
-        )
+        cheese_amount = await CheeseService.get_cheese_balance(user["cheese_manager_id"])
 
         return cheese_amount >= 50
 
@@ -192,31 +173,30 @@ class MissionService:
         user_id: str,
         reward_code: str,
         cheese_manager_id: str,
+        mission_code: str,
     ) -> None:
-
-        # 보상 검증
         item_inventory_rewards = await self.validate_reward(reward_code=reward_code)
 
-        # 보상 지급
         await self.process_reward(
             item_inventory_rewards=item_inventory_rewards,
             user_id=user_id,
             cheese_manager_id=cheese_manager_id,
+            mission_code=mission_code,
         )
 
     @staticmethod
     async def validate_reward(reward_code: str) -> list[ItemInventoryRewardInventory]:
         try:
-            # reward_code를 기반으로 RewardInventory에서 보상 조회
-            reward = await RewardInventory.get(reward_code=reward_code)
+            reward = await RewardInventory.filter(reward_code=reward_code).prefetch_related("item_inventories").first()
 
-            # 해당 보상에 연결된 ItemInventoryRewardInventory 항목 조회
-            item_inventory_rewards = await reward.item_inventories.all()
+            if not reward:
+                raise HTTPException(status_code=404, detail="Reward not found.")
+
+            item_inventory_rewards = reward.item_inventories
 
             if not item_inventory_rewards:
-                raise HTTPException(
-                    status_code=404, detail="No inventory found for this reward."
-                )
+                raise HTTPException(status_code=404, detail="No inventory found for this reward.")
+
             return item_inventory_rewards
 
         except DoesNotExist:
@@ -229,6 +209,7 @@ class MissionService:
         item_inventory_rewards: list[ItemInventoryRewardInventory],
         user_id: str,
         cheese_manager_id: str,
+        mission_code: str,
     ) -> None:
         for item_inventory_reward in item_inventory_rewards:
             item: ItemInventory = await item_inventory_reward.item_inventory
@@ -236,21 +217,15 @@ class MissionService:
 
             if item.item_category == "BADGE":
                 for _ in range(quantity):
-                    await BadgeService.add_badge(
-                        user_id=user_id, badge_code=item.item_code
-                    )
+                    await BadgeService.add_badge(user_id=user_id, badge_code=item.item_code)
             elif item.item_category == "COLOR":
                 for _ in range(quantity):
-                    await ColorService.add_color(
-                        user_id=user_id, color_code=item.item_code
-                    )
+                    await ColorService.add_color(user_id=user_id, color_code=item.item_code)
             elif item.item_category == "CHEESE":
-                await CheeseService.add_cheese(
-                    cheese_manager_id=cheese_manager_id, amount=quantity
-                )
+                await CheeseService.add_cheese(cheese_manager_id=cheese_manager_id, amount=quantity)
             elif item.item_category == "POINT":
+                if mission_code != "MS_DAILY_LIKE_3_PER_DAY":
+                    quantity += await AnswerService.calculate_consecutive_answer_points(user_id=user_id)
                 await LevelService.add_exp(user_id=user_id, exp=quantity)
             else:
-                raise ValueError(
-                    f"Invalid item category for reward: {item.item_category}"
-                )
+                raise ValueError(f"Invalid item category for reward: {item.item_category}")

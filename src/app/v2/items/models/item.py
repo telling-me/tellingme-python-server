@@ -24,12 +24,8 @@ class ProductInventory(models.Model):
 class ItemInventoryProductInventory(models.Model):
     item_inventory_product_inventory_id = fields.BigIntField(pk=True)
     quantity = fields.IntField()
-    item_inventory = fields.ForeignKeyField(
-        "models.ItemInventory", related_name="product_inventories"
-    )
-    product_inventory = fields.ForeignKeyField(
-        "models.ProductInventory", related_name="item_inventories"
-    )
+    item_inventory = fields.ForeignKeyField("models.ItemInventory", related_name="product_inventories")
+    product_inventory = fields.ForeignKeyField("models.ProductInventory", related_name="item_inventories")
     item_measurement = fields.CharField(max_length=255, null=True)
 
     class Meta:

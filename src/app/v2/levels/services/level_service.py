@@ -23,9 +23,6 @@ class LevelService:
 
     @classmethod
     async def level_up(cls, user_id: str) -> int:
-        """
-        유저가 레벨업 가능한지 확인 후, 레벨업 처리
-        """
         level_dto = await cls.get_level_info(user_id=user_id)
 
         level = level_dto.level
@@ -36,9 +33,7 @@ class LevelService:
             new_exp = current_exp - required_exp
             new_level = level + 1
 
-            await Level.update_level_and_exp(
-                user_id=user_id, new_level=new_level, new_exp=new_exp
-            )
+            await Level.update_level_and_exp(user_id=user_id, new_level=new_level, new_exp=new_exp)
             return 1
         return 0
 
@@ -49,23 +44,15 @@ class LevelService:
         current_exp = level_dto.current_exp
         new_exp = current_exp + exp
 
-        await Level.update_level_and_exp(
-            user_id=user_id, new_level=level_dto.level, new_exp=new_exp
-        )
+        await Level.update_level_and_exp(user_id=user_id, new_level=level_dto.level, new_exp=new_exp)
 
     @classmethod
-    async def calculate_bonus_points(cls, user_id: str) -> int:
-        return await AnswerService.calculate_consecutive_answer_points(user_id=user_id)
-
-    @classmethod
-    async def calculate_days_to_level_up(
-        cls, user_id: str, current_exp: int, required_exp: int
-    ) -> int:
+    async def calculate_days_to_level_up(cls, user_id: str, current_exp: int, required_exp: int) -> int:
         remaining_exp = required_exp - current_exp
         days_needed = 0
 
         answer_count = await AnswerService.get_answer_count(user_id=user_id)
-        bonus_points = await cls.calculate_bonus_points(user_id=user_id)
+        bonus_points = await AnswerService.calculate_consecutive_answer_points(user_id=user_id)
 
         while remaining_exp > 0:
             if answer_count == 1:

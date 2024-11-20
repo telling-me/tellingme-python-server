@@ -13,9 +13,7 @@ class QueryFormatter:
         """
         # 단일 값일 경우 문자열 포맷팅 처리
         if isinstance(values, (list, tuple)):
-            formatted_values = tuple(
-                f"'{value}'" if isinstance(value, str) else value for value in values
-            )
+            formatted_values = tuple(f"'{value}'" if isinstance(value, str) else value for value in values)
             return query_template % formatted_values
         else:
             # 단일 문자열일 경우 따옴표 추가

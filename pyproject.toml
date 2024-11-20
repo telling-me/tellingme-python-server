@@ -35,3 +35,11 @@ ignore_missing_imports = true # 누락된 import 무시
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 120
+
+
+[tool.isort]
+profile = "black"
+line_length = 120

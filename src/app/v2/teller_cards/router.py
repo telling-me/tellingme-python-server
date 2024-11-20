@@ -19,9 +19,7 @@ async def patch_teller_card_handler(
     badge_code = body.badgeCode
     color_code = body.colorCode
 
-    await TellerCardService.patch_teller_card(
-        user_id=user_id, badge_code=badge_code, color_code=color_code
-    )
+    await TellerCardService.patch_teller_card(user_id=user_id, badge_code=badge_code, color_code=color_code)
 
     teller_card = await TellerCardService.get_teller_card(user_id=user_id)
 

@@ -66,12 +66,13 @@ class CheeseManager(Model):
         if remaining_amount > 0:
             raise ValueError("Not enough cheese to complete the transaction")
 
-    async def add_cheese(self, amount: int) -> None:
+    @staticmethod
+    async def add_cheese(cheese_manager_id: int, amount: int) -> None:
         await CheeseHistory.create(
             status=CheeseStatus.CAN_USE,
             current_amount=amount,
             starting_amount=amount,
-            cheese_manager_id=self.cheese_manager_id,
+            cheese_manager_id=cheese_manager_id,
         )
 
 

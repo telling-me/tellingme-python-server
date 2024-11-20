@@ -2,7 +2,9 @@ from tortoise import fields
 from tortoise.models import Model
 
 from app.v2.teller_cards.querys.teller_card_query import (
-    PATCH_TELLER_CARD_QUERY, SELECT_TELLER_CARD_INFO_BY_USER_UUID_QUERY)
+    PATCH_TELLER_CARD_QUERY,
+    SELECT_TELLER_CARD_INFO_BY_USER_UUID_QUERY,
+)
 from common.utils.query_executor import QueryExecutor
 
 
@@ -18,14 +20,10 @@ class TellerCard(Model):
     async def get_teller_card_info_by_user_id(cls, user_id: str) -> dict:
         query = SELECT_TELLER_CARD_INFO_BY_USER_UUID_QUERY
         value = user_id
-        return await QueryExecutor.execute_query(
-            query, values=value, fetch_type="single"
-        )
+        return await QueryExecutor.execute_query(query, values=value, fetch_type="single")
 
     @classmethod
-    async def patch_teller_card_info_by_user_id(
-        cls, user_id: str, badge_code: str, color_code: str
-    ) -> None:
+    async def patch_teller_card_info_by_user_id(cls, user_id: str, badge_code: str, color_code: str) -> None:
         query = PATCH_TELLER_CARD_QUERY
         values = (badge_code, color_code, user_id)
         await QueryExecutor.execute_query(query, values=values, fetch_type="single")

@@ -1,8 +1,7 @@
 from tortoise import fields
 from tortoise.models import Model
 
-from app.v2.missions.querys.mission_query import (
-    SELECT_USER_MISSIONS_QUERY, UPDATE_USER_MISSION_PROGRESS_QUERY)
+from app.v2.missions.querys.mission_query import SELECT_USER_MISSIONS_QUERY, UPDATE_USER_MISSION_PROGRESS_QUERY
 from common.utils.query_executor import QueryExecutor
 
 
@@ -15,12 +14,9 @@ class UserMission(Model):
 
     @classmethod
     async def get_user_missions_by_condition_type(cls, user_id: str) -> dict:
-        # 유저 ID와 미션 조건 타입에 따른 미션 필터링
         query = SELECT_USER_MISSIONS_QUERY
         values = (user_id,)
-        return await QueryExecutor.execute_query(
-            query, values=values, fetch_type="multiple"
-        )
+        return await QueryExecutor.execute_query(query, values=values, fetch_type="multiple")
 
     @classmethod
     async def update_user_mission_progress(

@@ -1,6 +1,5 @@
 from fastapi import APIRouter
 
-from app.v2.answers.models.answer import Answer
 from app.v2.missions.services.mission_service import MissionService
 
 router = APIRouter(prefix="/mission", tags=["Mission"])

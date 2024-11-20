@@ -21,7 +21,7 @@ class AnswerService:
 
         if all_answers:
             for answer in all_answers:
-                answer_date = answer["date"]  # 답변의 날짜를 가져옴
+                answer_date = answer["date"]
                 if answer_date == target_date:
                     record += 1
                     target_date = target_date - timedelta(days=1)
@@ -32,5 +32,4 @@ class AnswerService:
 
     @classmethod
     async def calculate_consecutive_answer_points(cls, user_id: str) -> int:
-        consecutive_days = await cls.get_answer_record(user_id=user_id)
-        return min(consecutive_days, 10)
+        return min(await cls.get_answer_record(user_id=user_id), 10)

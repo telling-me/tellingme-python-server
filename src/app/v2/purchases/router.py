@@ -14,9 +14,7 @@ async def process_receipt(receipt: ReceiptRequest) -> dict:
         raise HTTPException(status_code=400, detail="Missing data")
     purchase_service = PurchaseService()
     # Apple 서버에서 영수증 검증으로 이동
-    return await purchase_service.validate_receipt(
-        receipt.receipt_data, receipt.user_id
-    )
+    return await purchase_service.validate_receipt(receipt.receipt_data, receipt.user_id)
 
 
 @router.post("")

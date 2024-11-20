@@ -8,10 +8,8 @@ from app.v2.cheese_managers.models.cheese_manager import CheeseManager
 from app.v2.cheese_managers.services.cheese_service import CheeseService
 from app.v2.colors.services.color_service import ColorService
 from app.v2.levels.services.level_service import LevelService
-from app.v2.mobiles.dtos.mypage_response import (MyPageResponseDTO,
-                                                 UserProfileWithLevel)
-from app.v2.mobiles.dtos.teller_card_response import (DataDTO,
-                                                      TellerCardResponseDTO)
+from app.v2.mobiles.dtos.mypage_response import MyPageResponseDTO, UserProfileWithLevel
+from app.v2.mobiles.dtos.teller_card_response import DataDTO, TellerCardResponseDTO
 from app.v2.teller_cards.services.teller_card_service import TellerCardService
 from app.v2.users.dtos.user_info_dto import UserInfoDTO
 from app.v2.users.dtos.user_profile_dto import UserProfileDTO
@@ -44,17 +42,11 @@ async def mobile_teller_card_handler(user_id: str) -> TellerCardResponseDTO:
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-    cheese_amount = await CheeseService.get_cheese_balance(
-        user_raw["cheese_manager_id"]
-    )
+    cheese_amount = await CheeseService.get_cheese_balance(user_raw["cheese_manager_id"])
 
-    user_info = UserInfoDTO.builder(
-        user_raw, cheeseBalance=cheese_amount, tellerCard=teller_card
-    )
+    user_info = UserInfoDTO.builder(user_raw, cheeseBalance=cheese_amount, tellerCard=teller_card)
 
-    data = DataDTO.builder(
-        badges=badges, colors=colors, userInfo=user_info, levelInfo=level_info
-    )
+    data = DataDTO.builder(badges=badges, colors=colors, userInfo=user_info, levelInfo=level_info)
 
     return TellerCardResponseDTO(
         code=status.HTTP_200_OK,
@@ -78,9 +70,7 @@ async def mobile_my_page_handler(user_id: str) -> MyPageResponseDTO:
         LevelService.get_level_info_add_answer_days(user_id),
     )
 
-    cheese_amount = await CheeseManager.get_total_cheese_amount_by_manager(
-        cheese_manager_id=user["cheese_manager_id"]
-    )
+    cheese_amount = await CheeseManager.get_total_cheese_amount_by_manager(cheese_manager_id=user["cheese_manager_id"])
 
     user_profile_data = UserProfileWithLevel.builder(
         userProfile=UserProfileDTO.builder(

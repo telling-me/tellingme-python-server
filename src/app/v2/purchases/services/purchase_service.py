@@ -3,9 +3,7 @@ from fastapi import HTTPException
 from tortoise.exceptions import DoesNotExist
 
 from app.v2.cheese_managers.services.cheese_service import CheeseService
-from app.v2.items.models.item import (ItemInventory,
-                                      ItemInventoryProductInventory,
-                                      ProductInventory)
+from app.v2.items.models.item import ItemInventory, ItemInventoryProductInventory, ProductInventory
 from app.v2.purchases.models.purchase_history import PurchaseHistory
 from app.v2.users.services.user_service import UserService
 
@@ -29,9 +27,7 @@ class PurchaseService:
         if response.status_code == 200:
             return await self._handle_receipt_response(response.json(), user_id)
         else:
-            raise HTTPException(
-                status_code=500, detail="Failed to connect to Apple server"
-            )
+            raise HTTPException(status_code=500, detail="Failed to connect to Apple server")
 
     async def _handle_receipt_response(self, response_data: dict, user_id: str) -> dict:
         if response_data.get("status") == 0:
@@ -73,18 +69,14 @@ class PurchaseService:
             product = await ProductInventory.get(product_code=product_code)
 
             if product.transaction_currency not in ["KRW", "CHEESE"]:
-                raise HTTPException(
-                    status_code=400, detail="Invalid transaction currency for purchase."
-                )
+                raise HTTPException(status_code=400, detail="Invalid transaction currency for purchase.")
 
             item_inventory_products = await ItemInventoryProductInventory.filter(
                 product_inventory_id=product.product_id
             ).all()
 
             if not item_inventory_products:
-                raise HTTPException(
-                    status_code=404, detail="No inventory found for this product."
-                )
+                raise HTTPException(status_code=404, detail="No inventory found for this product.")
             return item_inventory_products
         except DoesNotExist:
             raise HTTPException(status_code=404, detail="Product not found.")
@@ -103,13 +95,9 @@ class PurchaseService:
             if item.item_category == "SUBSCRIPTION":
                 await UserService.set_is_premium(user_id=user_id, is_premium=True)
             elif item.item_category == "CHEESE":
-                await CheeseService.add_cheese(
-                    cheese_manager_id=cheese_manager_id, amount=quantity
-                )
+                await CheeseService.add_cheese(cheese_manager_id=cheese_manager_id, amount=quantity)
             else:
-                raise ValueError(
-                    f"Invalid item category for purchase: {item.item_category}"
-                )
+                raise ValueError(f"Invalid item category for purchase: {item.item_category}")
 
     # purchase_info = {
     #     "transaction_id": "1000000654000000",  # 고유한 거래 ID (영수증 ID로 사용 가능)

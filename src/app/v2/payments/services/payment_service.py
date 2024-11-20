@@ -6,9 +6,7 @@ from app.v2.badges.services.badge_service import BadgeService
 from app.v2.cheese_managers.models.cheese_manager import CheeseManager
 from app.v2.colors.services.color_service import ColorService
 from app.v2.emotions.services.emotion_service import EmotionService
-from app.v2.items.models.item import (ItemInventory,
-                                      ItemInventoryProductInventory,
-                                      ProductInventory)
+from app.v2.items.models.item import ItemInventory, ItemInventoryProductInventory, ProductInventory
 
 
 class PaymentService:
@@ -20,18 +18,14 @@ class PaymentService:
             product = await ProductInventory.get(product_code=product_code)
 
             if product.transaction_currency != "CHEESE":
-                raise HTTPException(
-                    status_code=400, detail="Invalid transaction currency for payment."
-                )
+                raise HTTPException(status_code=400, detail="Invalid transaction currency for payment.")
 
             item_inventory_products = await ItemInventoryProductInventory.filter(
                 product_inventory_id=product.product_id
             ).all()
 
             if not item_inventory_products:
-                raise HTTPException(
-                    status_code=404, detail="No inventory found for this product."
-                )
+                raise HTTPException(status_code=404, detail="No inventory found for this product.")
 
             return product, item_inventory_products
 
@@ -47,16 +41,12 @@ class PaymentService:
         user_id: str,
         cheese_manager_id: int,
     ) -> None:
-        total_cheese = await CheeseManager.get_total_cheese_amount_by_manager(
-            cheese_manager_id=cheese_manager_id
-        )
+        total_cheese = await CheeseManager.get_total_cheese_amount_by_manager(cheese_manager_id=cheese_manager_id)
 
         total_required_cheese = product.price
 
         if total_cheese < total_required_cheese:
-            raise HTTPException(
-                status_code=400, detail="Not enough cheese for this purchase"
-            )
+            raise HTTPException(status_code=400, detail="Not enough cheese for this purchase")
 
         try:
             await CheeseManager.use_cheese(cheese_manager_id, total_required_cheese)
@@ -69,20 +59,12 @@ class PaymentService:
 
             if item.item_category == "BADGE":
                 for _ in range(quantity):
-                    await BadgeService.add_badge(
-                        user_id=user_id, badge_code=item.item_code
-                    )
+                    await BadgeService.add_badge(user_id=user_id, badge_code=item.item_code)
             elif item.item_category == "COLOR":
                 for _ in range(quantity):
-                    await ColorService.add_color(
-                        user_id=user_id, color_code=item.item_code
-                    )
+                    await ColorService.add_color(user_id=user_id, color_code=item.item_code)
             elif item.item_category == "EMOTION":
                 for _ in range(quantity):
-                    await EmotionService.add_emotion(
-                        user_id=user_id, emotion_code=item.item_code
-                    )
+                    await EmotionService.add_emotion(user_id=user_id, emotion_code=item.item_code)
             else:
-                raise ValueError(
-                    f"Invalid item category for cheese payment: {item.item_category}"
-                )
+                raise ValueError(f"Invalid item category for cheese payment: {item.item_category}")

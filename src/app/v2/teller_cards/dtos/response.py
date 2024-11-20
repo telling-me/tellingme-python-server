@@ -16,7 +16,5 @@ class TellerCardResponseDTO(BaseResponseDTO):
         return cls(
             code=200,
             message="success",
-            data=TellerCardDTO(
-                colorCode=teller_card.colorCode, badgeCode=teller_card.badgeCode
-            ),
+            data=TellerCardDTO(colorCode=teller_card.colorCode, badgeCode=teller_card.badgeCode),
         )

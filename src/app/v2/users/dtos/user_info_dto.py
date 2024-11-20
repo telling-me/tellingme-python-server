@@ -9,9 +9,7 @@ class UserInfoDTO(BaseModel):
     tellerCard: TellerCardDTO
 
     @classmethod
-    def builder(
-        cls, user_raw: dict, cheeseBalance: int, tellerCard: TellerCardDTO
-    ) -> "UserInfoDTO":
+    def builder(cls, user_raw: dict, cheeseBalance: int, tellerCard: TellerCardDTO) -> "UserInfoDTO":
         return cls(
             nickname=user_raw.get("nickname"),
             cheeseBalance=cheeseBalance,

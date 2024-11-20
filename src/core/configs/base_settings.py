@@ -1,3 +1,4 @@
+import os
 from enum import StrEnum
 
 from pydantic_settings import BaseSettings
@@ -11,10 +12,14 @@ class Env(StrEnum):
 
 class Settings(BaseSettings):
     ENV: Env = Env.LOCAL
-    DB_HOST: str
-    DB_PORT: int
-    DB_USER: str
-    DB_PASSWORD: str
-    DB_NAME: str
+    DB_HOST: str = "localhost"
+    DB_PORT: int = 3306
+    DB_USER: str = "root"
+    DB_PASSWORD: str = "password"
+    DB_NAME: str = "database_name"
     DB_TIMEZONE: str = "Asia/Seoul"
     DB_CHARSET: str = "utf8mb4"
+
+    class Config:
+        env_file = f".env.{os.getenv('ENV', 'local')}"
+        env_file_encoding = "utf-8"

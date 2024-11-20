@@ -18,9 +18,7 @@ async def process_payment(request: PaymentRequestDTO) -> PaymentResponseDTO:
         user_id = request.user_id
         product_code = request.productCode
 
-        product, item_inventory_products = await PaymentService.validate_payment(
-            product_code
-        )
+        product, item_inventory_products = await PaymentService.validate_payment(product_code)
 
         user = await UserService.get_user_info(user_id=user_id)
 
