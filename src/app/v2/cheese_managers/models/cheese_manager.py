@@ -23,7 +23,6 @@ class CheeseManager(Model):
             .annotate(total_cheese_amount=Sum("current_amount"))
             .values("total_cheese_amount")
         )
-
         return result[0].get("total_cheese_amount", 0)
 
     @staticmethod

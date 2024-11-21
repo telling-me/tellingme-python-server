@@ -70,7 +70,7 @@ async def mobile_my_page_handler(user_id: str) -> MyPageResponseDTO:
         LevelService.get_level_info_add_answer_days(user_id),
     )
 
-    cheese_amount = await CheeseManager.get_total_cheese_amount_by_manager(cheese_manager_id=user["cheese_manager_id"])
+    cheese_amount = await CheeseService.get_cheese_balance(cheese_manager_id=user["cheese_manager_id"])
 
     user_profile_data = UserProfileWithLevel.builder(
         userProfile=UserProfileDTO.builder(

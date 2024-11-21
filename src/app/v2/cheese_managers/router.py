@@ -12,5 +12,6 @@ async def get_cheese_handler(user_id: str) -> CheeseResponseDTO:
 
     user = await UserService.get_user_info(user_id=user_id)
     cheese_amount = await CheeseService.get_cheese_balance(user["cheese_manager_id"])
+    print(cheese_amount)
 
     return CheeseResponseDTO.builder(cheese_balance=cheese_amount)

@@ -5,7 +5,7 @@ class CheeseService:
 
     @classmethod
     async def get_cheese_balance(cls, cheese_manager_id: str) -> int:
-        return await CheeseManager.get_total_cheese_amount_by_manager(cheese_manager_id=cheese_manager_id)
+        return await CheeseManager.get_total_cheese_amount_by_manager(cheese_manager_id=cheese_manager_id) or 0
 
     @classmethod
     async def add_cheese(cls, cheese_manager_id: str, amount: int) -> None:
