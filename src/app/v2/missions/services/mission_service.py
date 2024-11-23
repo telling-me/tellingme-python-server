@@ -78,7 +78,6 @@ class MissionService:
                 user_id=user_id,
                 reward_code=mission.reward_code,
                 cheese_manager_id=cheese_manager_id,
-                mission_code=user_mission.mission_code,
             )
 
         # 진행도 업데이트
@@ -96,8 +95,8 @@ class MissionService:
             return 1
         elif mission_code == "MS_BADGE_POST_280_CHAR" and await self.check_long_answer(user_id):
             return 1
-        elif mission_code == "MS_DAILY_POST_GENERAL" and await self.check_post_count_min(user_id, 6):
-            return 1
+        # elif mission_code == "MS_DAILY_POST_GENERAL" and await self.check_post_count_min(user_id, 6):
+        #     return 1
         elif mission_code == "MS_BADGE_POST_CONSECUTIVE_7" and await self.check_consecutive_days(user_id):
             return 1
         elif mission_code == "MS_BADGE_POST_EARLY_3" and await self.check_early_morning_posts(user_id):
@@ -173,15 +172,11 @@ class MissionService:
         user_id: str,
         reward_code: str,
         cheese_manager_id: str,
-        mission_code: str,
     ) -> None:
         item_inventory_rewards = await self.validate_reward(reward_code=reward_code)
 
         await self.process_reward(
-            item_inventory_rewards=item_inventory_rewards,
-            user_id=user_id,
-            cheese_manager_id=cheese_manager_id,
-            mission_code=mission_code,
+            item_inventory_rewards=item_inventory_rewards, user_id=user_id, cheese_manager_id=cheese_manager_id
         )
 
     @staticmethod
@@ -209,7 +204,6 @@ class MissionService:
         item_inventory_rewards: list[ItemInventoryRewardInventory],
         user_id: str,
         cheese_manager_id: str,
-        mission_code: str,
     ) -> None:
         for item_inventory_reward in item_inventory_rewards:
             item: ItemInventory = await item_inventory_reward.item_inventory
@@ -224,8 +218,6 @@ class MissionService:
             elif item.item_category == "CHEESE":
                 await CheeseService.add_cheese(cheese_manager_id=cheese_manager_id, amount=quantity)
             elif item.item_category == "POINT":
-                if mission_code != "MS_DAILY_LIKE_3_PER_DAY":
-                    quantity += await AnswerService.calculate_consecutive_answer_points(user_id=user_id)
                 await LevelService.add_exp(user_id=user_id, exp=quantity)
             else:
                 raise ValueError(f"Invalid item category for reward: {item.item_category}")
