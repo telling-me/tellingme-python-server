@@ -1,16 +1,18 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, BackgroundTasks
 
 from app.v2.missions.services.mission_service import MissionService
 
 router = APIRouter(prefix="/mission", tags=["Mission"])
 
 
-@router.get("")
-async def mission_test_handler(user_id: str) -> None:
-
+async def process_mission_in_background(user_id: str):
     mission_service = MissionService()
+    await mission_service.update_mission_progress(user_id)
 
-    await mission_service.update_mission_progress(user_id=user_id)
+
+@router.get("")
+async def mission_handler(user_id: str, background_tasks: BackgroundTasks) -> None:
+    background_tasks.add_task(process_mission_in_background, user_id)
 
     # await mission_service.validate_reward(reward_code="RW_FIRST_POST")
 

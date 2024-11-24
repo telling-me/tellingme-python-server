@@ -12,3 +12,13 @@ INSERT_COLOR_CODE_FOR_USER_QUERY = f"""
     FROM user
     WHERE {USER_ID_QUERY}
 """
+
+SELECT_COLOR_BY_USER_UUID_QUERY = f"""
+    SELECT 
+        c.color_code,
+        ci.color_name,
+        ci.color_hex_code
+    FROM color c
+    JOIN color_inventory ci on c.color_code = ci.color_code
+    WHERE {USER_ID_QUERY}
+"""

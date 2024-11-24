@@ -1,4 +1,4 @@
-from app.v2.colors.dtos.color_dto import ColorCodeDTO
+from app.v2.colors.dtos.color_dto import ColorCodeDTO, ColorDTO
 from app.v2.colors.models.color import Color
 
 
@@ -11,3 +11,8 @@ class ColorService:
     @classmethod
     async def add_color(cls, user_id: str, color_code: str) -> None:
         await Color.add_color_code_for_user(user_id=user_id, color_code=color_code)
+
+    @classmethod
+    async def get_colors_with_details_by_user_id(cls, user_id: str) -> list[ColorDTO]:
+        colors_raw = await Color.get_colors_with_details_by_user_id(user_id=user_id)
+        return [ColorDTO.builder(color) for color in colors_raw]
