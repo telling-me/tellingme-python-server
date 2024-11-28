@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, status
 from tortoise.exceptions import DoesNotExist
 
 from app.v2.purchases.dtos.requests import PurchaseRequest, ReceiptRequestDTO
@@ -13,7 +13,12 @@ async def process_receipt(receipt: ReceiptRequestDTO) -> dict:
     if not receipt.receiptData or not receipt.user_id:
         raise HTTPException(status_code=400, detail="Missing data")
     purchase_service = PurchaseService()
-    return await purchase_service.validate_receipt(receipt.receiptData, receipt.user_id)
+    data = await purchase_service.validate_receipt(receipt.receiptData, receipt.user_id)
+    return {
+        "code": status.HTTP_200_OK,
+        "message": "Receipt verified successfully",
+        "data": data,
+    }
 
 
 @router.get("/receipt-test")
