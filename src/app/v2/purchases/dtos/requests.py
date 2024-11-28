@@ -1,8 +1,8 @@
 from pydantic import BaseModel
 
 
-class ReceiptRequest(BaseModel):
-    receipt_data: str
+class ReceiptRequestDTO(BaseModel):
+    receiptData: str
     user_id: str
 
 

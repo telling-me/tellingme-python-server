@@ -1,20 +1,25 @@
 from fastapi import APIRouter, HTTPException
 from tortoise.exceptions import DoesNotExist
 
-from app.v2.purchases.dtos.requests import PurchaseRequest, ReceiptRequest
+from app.v2.purchases.dtos.requests import PurchaseRequest, ReceiptRequestDTO
 from app.v2.purchases.services.purchase_service import PurchaseService
 from app.v2.users.services.user_service import UserService
 
 router = APIRouter(prefix="/purchase", tags=["Purchase"])
 
 
-@router.post("/process-receipt/")
-async def process_receipt(receipt: ReceiptRequest) -> dict:
-    if not receipt.receipt_data or not receipt.user_id:
+@router.post("/process-receipt")
+async def process_receipt(receipt: ReceiptRequestDTO) -> dict:
+    if not receipt.receiptData or not receipt.user_id:
         raise HTTPException(status_code=400, detail="Missing data")
     purchase_service = PurchaseService()
-    # Apple 서버에서 영수증 검증으로 이동
-    return await purchase_service.validate_receipt(receipt.receipt_data, receipt.user_id)
+    return await purchase_service.validate_receipt(receipt.receiptData, receipt.user_id)
+
+
+@router.get("/receipt-test")
+async def receipt_test() -> dict:
+    purchase_service = PurchaseService()
+    return await purchase_service.receipt_test()
 
 
 @router.post("")
