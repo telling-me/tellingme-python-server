@@ -31,7 +31,8 @@ class PurchaseService:
             response = await client.post(url, json=payload)
             print(response.json())
         if response.status_code == 200:
-            return await self._handle_receipt_response(response.json(), user_id)
+            return response.json()
+            # return await self._handle_receipt_response(response.json(), user_id)
         else:
             raise HTTPException(status_code=500, detail="Failed to connect to Apple server")
 
@@ -42,6 +43,7 @@ class PurchaseService:
         url = settings.APPLE_URL
 
         payload = {
+            "exclude-old-transactions": True,
             "receipt-data": base64_data,
             "password": settings.APPLE_SHARED_SECRET,
         }
