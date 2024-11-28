@@ -4,7 +4,6 @@ from fastapi import FastAPI
 
 from common.post_construct import post_construct
 
-
 logging.basicConfig(level=logging.DEBUG)
 
 db_client_logger = logging.getLogger("tortoise.db_client")

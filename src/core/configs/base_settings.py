@@ -19,6 +19,8 @@ class Settings(BaseSettings):
     DB_NAME: str = "database_name"
     DB_TIMEZONE: str = "Asia/Seoul"
     DB_CHARSET: str = "utf8mb4"
+    APPLE_URL: str = "https://sandbox.itunes.apple.com/verifyReceipt"
+    APPLE_SHARED_SECRET: str = "YOUR_SHARED_SECRET"
 
     class Config:
         env_file = f".env.{os.getenv('ENV', 'local')}"

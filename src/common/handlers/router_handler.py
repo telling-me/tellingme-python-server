@@ -3,13 +3,13 @@ from fastapi import FastAPI
 from app.v2.answers.router import router as answer_router
 from app.v2.badges.router import router as badge_router
 from app.v2.cheese_managers.router import router as cheese_router
+from app.v2.colors.router import router as color_router
 from app.v2.missions.router import router as mission_router
 from app.v2.mobiles.router import router as mobile_router
 from app.v2.payments.router import router as payment_router
 from app.v2.purchases.router import router as purchase_router
 from app.v2.questions.router import router as question_router
 from app.v2.teller_cards.router import router as teller_card_router
-from app.v2.colors.router import router as color_router
 
 
 def attach_router_handlers(app: FastAPI) -> None:

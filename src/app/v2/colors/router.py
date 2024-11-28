@@ -1,6 +1,5 @@
 from fastapi import APIRouter, status
 
-
 from app.v2.colors.dtos.response import ColorListResponseDTO
 from app.v2.colors.services.color_service import ColorService
 

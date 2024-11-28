@@ -3,8 +3,8 @@ from tortoise.models import Model
 
 from app.v2.colors.querys.color_query import (
     INSERT_COLOR_CODE_FOR_USER_QUERY,
-    SELECT_COLOR_CODE_BY_USER_UUID_QUERY,
     SELECT_COLOR_BY_USER_UUID_QUERY,
+    SELECT_COLOR_CODE_BY_USER_UUID_QUERY,
 )
 from common.utils.query_executor import QueryExecutor
 
