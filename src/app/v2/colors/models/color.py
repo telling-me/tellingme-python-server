@@ -34,3 +34,12 @@ class Color(Model):
         query = SELECT_COLOR_BY_USER_UUID_QUERY
         value = user_id
         return await QueryExecutor.execute_query(query, values=value, fetch_type="multiple")
+
+
+class ColorInventory(Model):
+    color_code = fields.CharField(max_length=255, primary_key=True)
+    color_name = fields.CharField(max_length=255, null=True)
+    color_hex_code = fields.CharField(max_length=255, null=True)
+
+    class Meta:
+        table = "color_inventory"  # 테이블 이름을 명시

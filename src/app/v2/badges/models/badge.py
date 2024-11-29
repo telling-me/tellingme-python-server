@@ -42,3 +42,13 @@ class Badge(Model):
         query = INSERT_BADGE_CODE_FOR_USER_QUERY
         values = (badge_code, user_id)
         await QueryExecutor.execute_query(query, values=values)
+
+
+class BadgeInventory(Model):
+    badge_code = fields.CharField(max_length=255, primary_key=True)
+    badge_name = fields.CharField(max_length=255, null=True)
+    badge_condition = fields.CharField(max_length=255, null=True)
+    badge_middle_name = fields.CharField(max_length=255, null=True)
+
+    class Meta:
+        table = "badge_inventory"

@@ -1,3 +1,5 @@
+from app.v2.badges.models.badge import BadgeInventory
+from app.v2.colors.models.color import ColorInventory
 from app.v2.teller_cards.dtos.teller_card_dto import TellerCardDTO
 from app.v2.teller_cards.models.teller_card import TellerCard
 
@@ -13,3 +15,15 @@ class TellerCardService:
         await TellerCard.patch_teller_card_info_by_user_id(
             user_id=user_id, badge_code=badge_code, color_code=color_code
         )
+
+    @classmethod
+    async def validate_teller_card(cls, badge_code: str, color_code: str) -> None:
+        badge_code_list = await BadgeInventory.all().values("badge_code")
+        color_code_list = await ColorInventory.all().values("color_code")
+        badge_codes = [badge["badge_code"] for badge in badge_code_list]
+        color_codes = [color["color_code"] for color in color_code_list]
+
+        if badge_code not in badge_codes:
+            raise ValueError("Invalid badge code")
+        if color_code not in color_codes:
+            raise ValueError("Invalid color code")
