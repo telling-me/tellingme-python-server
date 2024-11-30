@@ -22,7 +22,8 @@ class AnswerService:
         if all_answers:
             for answer in all_answers:
                 answer_date = answer["date"]
-                if answer_date == target_date:
+
+                if answer_date == target_date.date():  # 날짜만 비교
                     record += 1
                     target_date = target_date - timedelta(days=1)
                 else:

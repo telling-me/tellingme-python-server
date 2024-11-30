@@ -14,6 +14,7 @@ class DataDTO(BaseModel):
     colors: List[ColorCodeDTO]
     userInfo: UserInfoDTO
     levelInfo: LevelInfoDTO
+    recordCount: int = 0
 
     @classmethod
     def builder(
@@ -22,12 +23,14 @@ class DataDTO(BaseModel):
         colors: List[ColorCodeDTO],
         userInfo: UserInfoDTO,
         levelInfo: LevelInfoDTO,
+        recordCount: Optional[int] = None,
     ) -> "DataDTO":
         return cls(
             badges=badges,
             colors=colors,
             userInfo=userInfo,
             levelInfo=levelInfo,
+            recordCount=recordCount if recordCount is not None else 0,
         )
 
 

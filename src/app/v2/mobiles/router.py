@@ -29,24 +29,25 @@ async def mobile_main_handler() -> None:
     status_code=status.HTTP_200_OK,
 )
 async def mobile_teller_card_handler(user_id: str) -> TellerCardResponseDTO:
-    try:
-        badges_task = BadgeService.get_badges_with_details_by_user_id(user_id)
-        colors_task = ColorService.get_colors(user_id)
-        level_info_task = LevelService.get_level_info_add_answer_days(user_id)
-        teller_card_task = TellerCardService.get_teller_card(user_id)
-        user_info_task = UserService.get_user_info(user_id)
 
-        badges, colors, level_info, teller_card, user_raw = await asyncio.gather(
-            badges_task, colors_task, level_info_task, teller_card_task, user_info_task
-        )
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+    badges_task = BadgeService.get_badges_with_details_by_user_id(user_id)
+    colors_task = ColorService.get_colors(user_id)
+    level_info_task = LevelService.get_level_info_add_answer_days(user_id)
+    teller_card_task = TellerCardService.get_teller_card(user_id)
+    user_info_task = UserService.get_user_info(user_id)
+    record_answer_task = AnswerService.get_answer_record(user_id=user_id)
+
+    badges, colors, level_info, teller_card, user_raw, record_count = await asyncio.gather(
+        badges_task, colors_task, level_info_task, teller_card_task, user_info_task, record_answer_task
+    )
 
     cheese_amount = await CheeseService.get_cheese_balance(user_raw["cheese_manager_id"])
 
     user_info = UserInfoDTO.builder(user_raw, cheeseBalance=cheese_amount, tellerCard=teller_card)
 
-    data = DataDTO.builder(badges=badges, colors=colors, userInfo=user_info, levelInfo=level_info)
+    data = DataDTO.builder(
+        badges=badges, colors=colors, userInfo=user_info, levelInfo=level_info, recordCount=record_count
+    )
 
     return TellerCardResponseDTO(
         code=status.HTTP_200_OK,
