@@ -13,8 +13,8 @@ class LevelService:
         level_dto = await cls.get_level_info(user_id=user_id)
         needs_to_level_up = await cls.calculate_days_to_level_up(
             user_id=user_id,
-            current_exp=level_dto.current_exp,
-            required_exp=level_dto.required_exp,
+            current_exp=level_dto.currentExp,
+            required_exp=level_dto.requiredExp,
         )
         return LevelInfoDTO.builder(
             level_dto=await cls.get_level_info(user_id=user_id),
