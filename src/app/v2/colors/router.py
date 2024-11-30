@@ -11,7 +11,7 @@ router = APIRouter(prefix="/user/color", tags=["Color"])
     response_model=ColorListResponseDTO,
     status_code=status.HTTP_200_OK,
 )
-async def get_user_badge_handler(user_id: str):
+async def get_user_color_handler(user_id: str):
 
     colors = await ColorService.get_colors_with_details_by_user_id(user_id=user_id)
 

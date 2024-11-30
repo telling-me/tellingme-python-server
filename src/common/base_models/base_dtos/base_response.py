@@ -8,5 +8,3 @@ class BaseResponseDTO(BaseModel):
     code: int
     message: str
     data: Optional[Any] = None
-
-    # @classmethod()

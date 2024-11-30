@@ -19,6 +19,7 @@ TORTOISE_APP_MODELS = [
     "app.v2.items.models.item",
     "app.v2.missions.models.mission",
     "app.v2.likes.models.like",
+    "app.v2.emotions.models.emotion",
 ]
 
 TORTOISE_ORM = {

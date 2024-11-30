@@ -154,8 +154,8 @@ class PurchaseService:
     #     "original_transaction_id": "1000000654000000"
     # }
 
-    import re
     import base64
+    import re
 
     @staticmethod
     def extract_base64_from_rtf(file_path):
