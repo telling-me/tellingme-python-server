@@ -7,7 +7,9 @@ class AnswerService:
     @classmethod
     async def get_answer_count(cls, user_id: str) -> int:
         answer_count_raw = await Answer.get_answer_count_by_user_id(user_id=user_id)
-        return answer_count_raw["answer_count"]
+        if answer_count_raw is None:
+            return 0
+        return int(answer_count_raw.get("answer_count", 0))
 
     @classmethod
     async def get_answer_record(cls, user_id: str) -> int:

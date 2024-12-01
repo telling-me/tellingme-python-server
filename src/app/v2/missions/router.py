@@ -5,7 +5,7 @@ from app.v2.missions.services.mission_service import MissionService
 router = APIRouter(prefix="/mission", tags=["Mission"])
 
 
-async def process_mission_in_background(user_id: str):
+async def process_mission_in_background(user_id: str) -> None:
     mission_service = MissionService()
     await mission_service.update_mission_progress(user_id)
 

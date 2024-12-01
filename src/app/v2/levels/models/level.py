@@ -1,12 +1,9 @@
+from typing import Any
+
 from tortoise import fields
 from tortoise.models import Model
 
-from app.v2.levels.querys.level_query import (
-    SELECT_USER_EXP_QUERY,
-    SELECT_USER_LEVEL_AND_EXP_BY_USER_UUID_QUERY,
-    SELECT_USER_LEVEL_AND_REQUIRED_EXP_QUERY,
-    UPDATE_USER_LEVEL_AND_EXP_QUERY,
-)
+from app.v2.levels.querys.level_query import SELECT_USER_LEVEL_AND_REQUIRED_EXP_QUERY, UPDATE_USER_LEVEL_AND_EXP_QUERY
 from common.utils.query_executor import QueryExecutor
 
 
@@ -19,7 +16,7 @@ class Level(Model):
         table = "level"
 
     @classmethod
-    async def get_level_info(cls, user_id: str) -> dict | None:
+    async def get_level_info(cls, user_id: str) -> Any:
         query = SELECT_USER_LEVEL_AND_REQUIRED_EXP_QUERY
         value = user_id
         return await QueryExecutor.execute_query(query, values=(value,), fetch_type="single")

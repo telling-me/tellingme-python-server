@@ -1,3 +1,5 @@
+from typing import Any
+
 from fastapi import APIRouter, HTTPException, status
 from tortoise.exceptions import DoesNotExist
 
@@ -9,7 +11,7 @@ router = APIRouter(prefix="/purchase", tags=["Purchase"])
 
 
 @router.post("/process-receipt")
-async def process_receipt(receipt: ReceiptRequestDTO) -> dict:
+async def process_receipt(receipt: ReceiptRequestDTO) -> dict[str, Any]:
     if not receipt.receiptData or not receipt.user_id:
         raise HTTPException(status_code=400, detail="Missing data")
     purchase_service = PurchaseService()
@@ -21,10 +23,10 @@ async def process_receipt(receipt: ReceiptRequestDTO) -> dict:
     }
 
 
-@router.get("/receipt-test")
-async def receipt_test() -> dict:
-    purchase_service = PurchaseService()
-    return await purchase_service.receipt_test()
+# @router.get("/receipt-test")
+# async def receipt_test() -> dict[str, Any]:
+#     purchase_service = PurchaseService()
+#     return await purchase_service.receipt_test()
 
 
 @router.post("")

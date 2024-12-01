@@ -1,6 +1,12 @@
+from typing import Optional, TypedDict
+
 from pydantic import BaseModel
 
 from common.base_models.base_dtos.base_response import BaseResponseDTO
+
+
+class CheeseAmountResult(TypedDict):
+    total_cheese_amount: Optional[int]
 
 
 class CheeseDTO(BaseModel):

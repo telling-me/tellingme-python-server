@@ -3,7 +3,7 @@ from typing import Union
 
 class QueryFormatter:
     @staticmethod
-    def format(query_template: str, values: Union[str, list, tuple]) -> str:
+    def format(query_template: str, values: Union[str, list[Union[str, int]], tuple[Union[str, int], ...]]) -> str:
         """
         쿼리 템플릿과 단일 값 또는 리스트/튜플 형태의 값을 받아 SQL 쿼리를 포맷팅하는 메서드 (%s 사용)
 

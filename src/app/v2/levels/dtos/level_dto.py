@@ -1,3 +1,5 @@
+from typing import Any
+
 from pydantic import BaseModel
 
 
@@ -7,7 +9,7 @@ class LevelDTO(BaseModel):
     requiredExp: int | None = None
 
     @classmethod
-    def builder(cls, level: dict) -> "LevelDTO":
+    def builder(cls, level: dict[str, Any]) -> "LevelDTO":
         return cls(
             level=level["level_level"],
             currentExp=level["level_exp"],

@@ -1,3 +1,5 @@
+from typing import Any
+
 from app.v2.emotions.dtos.response import EmotionDTO, EmotionListResponseDTO
 from app.v2.emotions.models.emotion import Emotion, EmotionInventory
 
@@ -19,7 +21,7 @@ emotion_mapping = {
 
 class EmotionService:
     @classmethod
-    async def get_emotions(cls, user_id: str) -> list[dict]:
+    async def get_emotions(cls, user_id: str) -> Any:
         return await Emotion.get_emotions_with_details_by_user_id(user_id=user_id)
 
     @classmethod
@@ -27,7 +29,7 @@ class EmotionService:
         await Emotion.add_emotion(user_id=user_id, emotion_code=emotion_code)
 
     @classmethod
-    async def get_emotion_inventory(cls) -> list[dict]:
+    async def get_emotion_inventory(cls) -> list[dict[str, str]]:
         return await EmotionInventory.get_emotion_inventory()
 
     @classmethod

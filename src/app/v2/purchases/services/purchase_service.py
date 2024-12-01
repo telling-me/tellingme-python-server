@@ -1,5 +1,6 @@
 import base64
 import re
+from typing import Any, cast
 
 import httpx
 from fastapi import HTTPException
@@ -18,7 +19,7 @@ class PurchaseService:
         print(f"Processing KRW payment: {product.price * quantity} KRW")
         # 여기에 실제 KRW 결제 처리 로직 구현
 
-    async def validate_receipt(self, receipt_data: str, user_id: str) -> dict:
+    async def validate_receipt(self, receipt_data: str, user_id: str) -> dict[str, Any]:
 
         url = settings.APPLE_URL
 
@@ -31,33 +32,33 @@ class PurchaseService:
             response = await client.post(url, json=payload)
             print(response.json())
         if response.status_code == 200:
-            return response.json()
+            return cast(dict[str, Any], response.json())
             # return await self._handle_receipt_response(response.json(), user_id)
         else:
             raise HTTPException(status_code=500, detail="Failed to connect to Apple server")
 
-    async def receipt_test(self) -> dict:
-        file_path = "/Users/gimtaeu/workspace/tellingme-python-server/1개월 구독한 영수증 data.txt/TXT.rtf"
-        base64_data = self.extract_base64_from_rtf(file_path)
+    # async def receipt_test(self) -> dict[str, Any]:
+    #     file_path = "/Users/gimtaeu/workspace/tellingme-python-server/1개월 구독한 영수증 data.txt/TXT.rtf"
+    #     base64_data = self.extract_base64_from_rtf(file_path)
+    #
+    #     url = settings.APPLE_URL
+    #
+    #     payload = {
+    #         "exclude-old-transactions": True,
+    #         "receipt-data": base64_data,
+    #         "password": settings.APPLE_SHARED_SECRET,
+    #     }
+    #
+    #     async with httpx.AsyncClient() as client:
+    #         response = await client.post(url, json=payload)
+    #         response_data = response.json()
+    #         print(response_data)
+    #         if response.status_code != 200 or response_data.get("status") != 0:
+    #             raise HTTPException(status_code=400, detail="Receipt verification failed")
+    #
+    #         return response_data
 
-        url = settings.APPLE_URL
-
-        payload = {
-            "exclude-old-transactions": True,
-            "receipt-data": base64_data,
-            "password": settings.APPLE_SHARED_SECRET,
-        }
-
-        async with httpx.AsyncClient() as client:
-            response = await client.post(url, json=payload)
-            response_data = response.json()
-            print(response_data)
-            if response.status_code != 200 or response_data.get("status") != 0:
-                raise HTTPException(status_code=400, detail="Receipt verification failed")
-
-            return response_data
-
-    async def _handle_receipt_response(self, response_data: dict, user_id: str) -> dict:
+    async def _handle_receipt_response(self, response_data: dict[str, Any], user_id: str) -> dict[str, Any]:
         if response_data.get("status") == 0:
             in_app_purchase = response_data.get("receipt", {}).get("in_app", [])
             if in_app_purchase:
@@ -69,7 +70,7 @@ class PurchaseService:
             raise HTTPException(status_code=400, detail="Invalid receipt")
 
     @classmethod
-    async def _save_purchase_history(cls, user_id: str, purchase_info: dict) -> dict:
+    async def _save_purchase_history(cls, user_id: str, purchase_info: dict[str, Any]) -> dict[str, Any]:
         receipt_id = purchase_info.get("transaction_id")
         product_code = purchase_info.get("product_id")
         status = "completed"
@@ -114,7 +115,7 @@ class PurchaseService:
         cls,
         item_inventory_products: list[ItemInventoryProductInventory],
         user_id: str,
-        cheese_manager_id: str,
+        cheese_manager_id: int,
     ) -> None:
         for item_inventory_product in item_inventory_products:
             item: ItemInventory = await item_inventory_product.item_inventory
@@ -157,34 +158,34 @@ class PurchaseService:
     import base64
     import re
 
-    @staticmethod
-    def extract_base64_from_rtf(file_path):
-        # 파일 읽기
-        try:
-            with open(file_path, "r", encoding="utf-8") as file:
-                content = file.read()
-        except FileNotFoundError:
-            raise ValueError(f"File not found: {file_path}")
-        except Exception as e:
-            raise ValueError(f"Failed to read the file: {str(e)}")
-
-        # Base64 데이터 추출 (MII로 시작하는 패턴만)
-        base64_pattern = r"MII[A-Za-z0-9+/=]+"
-        matches = re.findall(base64_pattern, content)
-
-        if not matches:
-            raise ValueError("No valid Base64 data found in the file.")
-
-        # 가장 긴 Base64 데이터 선택
-        base64_data = max(matches, key=len)
-
-        # Base64 데이터 유효성 검증
-        try:
-            base64.b64decode(base64_data, validate=True)
-        except Exception:
-            raise ValueError("Extracted data is not valid Base64.")
-
-        # 디버깅 로그 출력
-        print(f"Extracted Base64 data length: {len(base64_data)}")
-
-        return base64_data
+    # @staticmethod
+    # def extract_base64_from_rtf(file_path: str) -> str:
+    #     # 파일 읽기
+    #     try:
+    #         with open(file_path, "r", encoding="utf-8") as file:
+    #             content = file.read()
+    #     except FileNotFoundError:
+    #         raise ValueError(f"File not found: {file_path}")
+    #     except Exception as e:
+    #         raise ValueError(f"Failed to read the file: {str(e)}")
+    #
+    #     # Base64 데이터 추출 (MII로 시작하는 패턴만)
+    #     base64_pattern = r"MII[A-Za-z0-9+/=]+"
+    #     matches = re.findall(base64_pattern, content)
+    #
+    #     if not matches:
+    #         raise ValueError("No valid Base64 data found in the file.")
+    #
+    #     # 가장 긴 Base64 데이터 선택
+    #     base64_data = max(matches, key=len)
+    #
+    #     # Base64 데이터 유효성 검증
+    #     try:
+    #         base64.b64decode(base64_data, validate=True)
+    #     except Exception:
+    #         raise ValueError("Extracted data is not valid Base64.")
+    #
+    #     # 디버깅 로그 출력
+    #     print(f"Extracted Base64 data length: {len(base64_data)}")
+    #
+    #     return base64_data

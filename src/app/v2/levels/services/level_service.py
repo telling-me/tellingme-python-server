@@ -1,3 +1,5 @@
+from fastapi import HTTPException
+
 from app.v2.answers.services.answer_service import AnswerService
 from app.v2.levels.dtos.level_dto import LevelDTO, LevelInfoDTO
 from app.v2.levels.models.level import Level
@@ -6,11 +8,18 @@ from app.v2.levels.models.level import Level
 class LevelService:
     @classmethod
     async def get_level_info(cls, user_id: str) -> LevelDTO:
-        return LevelDTO.builder(level=await Level.get_level_info(user_id=user_id))
+        level_data = await Level.get_level_info(user_id=user_id)
+        if level_data is None:
+            raise HTTPException(status_code=404, detail="Level info not found")
+        return LevelDTO.builder(level=level_data)
 
     @classmethod
-    async def get_level_info_add_answer_days(cls, user_id: str) -> LevelDTO:
+    async def get_level_info_add_answer_days(cls, user_id: str) -> LevelInfoDTO:
         level_dto = await cls.get_level_info(user_id=user_id)
+
+        if level_dto.requiredExp is None:
+            raise ValueError("Required experience cannot be None")  # 예외를 던지는 방법
+
         needs_to_level_up = await cls.calculate_days_to_level_up(
             user_id=user_id,
             current_exp=level_dto.currentExp,
@@ -26,8 +35,11 @@ class LevelService:
         level_dto = await cls.get_level_info(user_id=user_id)
 
         level = level_dto.level
-        current_exp = level_dto.current_exp
-        required_exp = level_dto.required_exp
+        current_exp = level_dto.currentExp
+        required_exp = level_dto.requiredExp
+
+        if current_exp is None or required_exp is None:
+            raise ValueError("Experience values cannot be None")
 
         if current_exp >= required_exp:
             new_exp = current_exp - required_exp
@@ -41,7 +53,7 @@ class LevelService:
     async def add_exp(cls, user_id: str, exp: int) -> None:
         level_dto = await cls.get_level_info(user_id=user_id)
 
-        current_exp = level_dto.current_exp
+        current_exp = level_dto.currentExp
         new_exp = current_exp + exp
 
         await Level.update_level_and_exp(user_id=user_id, new_level=level_dto.level, new_exp=new_exp)

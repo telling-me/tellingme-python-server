@@ -1,9 +1,13 @@
+from typing import Any
+
 from tortoise import fields
 from tortoise.expressions import Q
+from tortoise.fields import ForeignKeyRelation
 from tortoise.functions import Sum
 from tortoise.models import Model
 from tortoise.transactions import atomic
 
+from app.v2.cheese_managers.dtos.cheese_dto import CheeseAmountResult
 from app.v2.cheese_managers.models.cheese_status import CheeseStatus
 
 
@@ -15,7 +19,7 @@ class CheeseManager(Model):
 
     @staticmethod
     async def get_total_cheese_amount_by_manager(cheese_manager_id: int) -> int:
-        result = (
+        result: list[dict[str, Any]] = (
             await CheeseHistory.filter(
                 Q(status=CheeseStatus.CAN_USE) | Q(status=CheeseStatus.USING),
                 cheese_manager_id=cheese_manager_id,
@@ -23,7 +27,11 @@ class CheeseManager(Model):
             .annotate(total_cheese_amount=Sum("current_amount"))
             .values("total_cheese_amount")
         )
-        return result[0].get("total_cheese_amount", 0)
+        if not result or result[0].get("total_cheese_amount") is None:
+            return 0
+
+        total_cheese_amount = result[0].get("total_cheese_amount")
+        return int(total_cheese_amount) if total_cheese_amount is not None else 0
 
     @staticmethod
     async def use_cheese(cheese_manager_id: int, amount: int) -> None:
@@ -80,10 +88,9 @@ class CheeseHistory(Model):
     status = fields.CharEnumField(CheeseStatus, max_length=50, null=True)  # Enum Field
     current_amount = fields.IntField()
     starting_amount = fields.IntField()
-    cheese_manager = fields.ForeignKeyField(
+    cheese_manager: ForeignKeyRelation[CheeseManager] = fields.ForeignKeyField(
         "models.CheeseManager",
         related_name="histories",
-        null=True,
         on_delete=fields.CASCADE,
     )
 

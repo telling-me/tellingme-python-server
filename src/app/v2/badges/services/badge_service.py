@@ -20,4 +20,6 @@ class BadgeService:
     @classmethod
     async def get_badge_count(cls, user_id: str) -> int:
         badge_count_raw = await Badge.get_badge_count_by_user_id(user_id=user_id)
-        return badge_count_raw.get("badge_count", 0)
+        if badge_count_raw is None:
+            return 0
+        return int(badge_count_raw.get("badge_count", 0))

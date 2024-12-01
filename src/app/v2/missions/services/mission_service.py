@@ -44,7 +44,7 @@ class MissionService:
             UserService.get_user_info(user_id=user_id), self.get_user_missions(user_id=user_id), MissionInventory.all()
         )
 
-        cheese_manager_id = user["cheese_manager_id"]
+        cheese_manager_id: int = user["cheese_manager_id"]
         mission_dict = {mission.mission_code: mission for mission in missions}
         level_up_mission = None
 
@@ -62,7 +62,11 @@ class MissionService:
             )
 
     async def _process_single_mission(
-        self, user_mission: UserMissionDTO, mission_dict: dict, cheese_manager_id: dict, user_id: str
+        self,
+        user_mission: UserMissionDTO,
+        mission_dict: dict[str, MissionInventory],
+        cheese_manager_id: int,
+        user_id: str,
     ) -> None:
         mission = mission_dict.get(user_mission.mission_code)
 
@@ -95,8 +99,6 @@ class MissionService:
             return 1
         elif mission_code == "MS_BADGE_POST_280_CHAR" and await self.check_long_answer(user_id):
             return 1
-        # elif mission_code == "MS_DAILY_POST_GENERAL" and await self.check_post_count_min(user_id, 6):
-        #     return 1
         elif mission_code == "MS_BADGE_POST_CONSECUTIVE_7" and await self.check_consecutive_days(user_id):
             return 1
         elif mission_code == "MS_BADGE_POST_EARLY_3" and await self.check_early_morning_posts(user_id):
@@ -114,17 +116,20 @@ class MissionService:
     @staticmethod
     async def check_first_post(user_id: str) -> bool:
         post_count_raw = await Answer.get_answer_count_by_user_id(user_id=user_id)
-        return post_count_raw.get("answer_count", 0) > 0
+        post_count: int = post_count_raw.get("answer_count", 0)
+        return post_count > 0
 
     @staticmethod
     async def check_post_count_range(user_id: str, min_count: int, max_count: int) -> bool:
-        post_count = await Answer.get_answer_count_by_user_id(user_id=user_id)
-        return min_count <= post_count.get("answer_count", 0) <= max_count
+        post_count_raw = await Answer.get_answer_count_by_user_id(user_id=user_id)
+        post_count: int = post_count_raw.get("answer_count", 0)
+        return min_count <= post_count <= max_count
 
     @staticmethod
     async def check_post_count_min(user_id: str, min_count: int) -> bool:
-        post_count = await Answer.get_answer_count_by_user_id(user_id=user_id)
-        return post_count.get("answer_count", 0) >= min_count
+        post_count_raw = await Answer.get_answer_count_by_user_id(user_id=user_id)
+        post_count: int = post_count_raw.get("answer_count", 0)
+        return post_count >= min_count
 
     @staticmethod
     async def check_long_answer(user_id: str) -> bool:
@@ -141,7 +146,7 @@ class MissionService:
         recent_answer = await Answer.get_most_recent_answer_by_user_id(user_id=user_id)
         if recent_answer:
             answer_time = recent_answer.get("created_time")
-            return 0 <= answer_time.hour <= 5 if answer_time else False
+            return 0 <= answer_time.hour <= 5 if isinstance(answer_time, datetime) else False
         return False
 
     @staticmethod
@@ -164,14 +169,14 @@ class MissionService:
     @staticmethod
     async def check_three_likes_different_posts(user_id: str) -> bool:
         like_raw = await Like.get_unique_likes_today(user_id)
-        like_count = like_raw.get("unique_likes", 0)
+        like_count: int = like_raw.get("unique_likes", 0)
         return like_count >= 3
 
     async def reward_user_for_mission(
         self,
         user_id: str,
         reward_code: str,
-        cheese_manager_id: str,
+        cheese_manager_id: int,
     ) -> None:
         item_inventory_rewards = await self.validate_reward(reward_code=reward_code)
 
@@ -180,7 +185,7 @@ class MissionService:
         )
 
     @staticmethod
-    async def validate_reward(reward_code: str) -> list[ItemInventoryRewardInventory]:
+    async def validate_reward(reward_code: str):  # type: ignore
         try:
             reward = await RewardInventory.filter(reward_code=reward_code).prefetch_related("item_inventories").first()
 
@@ -188,9 +193,6 @@ class MissionService:
                 raise HTTPException(status_code=404, detail="Reward not found.")
 
             item_inventory_rewards = reward.item_inventories
-
-            if not item_inventory_rewards:
-                raise HTTPException(status_code=404, detail="No inventory found for this reward.")
 
             return item_inventory_rewards
 
@@ -203,7 +205,7 @@ class MissionService:
         cls,
         item_inventory_rewards: list[ItemInventoryRewardInventory],
         user_id: str,
-        cheese_manager_id: str,
+        cheese_manager_id: int,
     ) -> None:
         for item_inventory_reward in item_inventory_rewards:
             item: ItemInventory = await item_inventory_reward.item_inventory

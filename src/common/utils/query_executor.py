@@ -1,4 +1,5 @@
-from typing import Union
+from datetime import datetime
+from typing import Any, Union
 
 from tortoise import Tortoise
 
@@ -7,8 +8,10 @@ class QueryExecutor:
 
     @staticmethod
     async def execute_query(
-        query: str, values: Union[tuple, str] = (), fetch_type: str = "multiple"
-    ) -> Union[dict, list[dict], int]:
+        query: str,
+        values: Union[tuple[Union[str, int, float, datetime], ...], str] = (),
+        fetch_type: str = "multiple",
+    ) -> Any:  # type ignore
         """
         SQL 쿼리를 실행하고 결과를 반환합니다.
 
@@ -20,15 +23,15 @@ class QueryExecutor:
         connection = Tortoise.get_connection("default")
 
         if isinstance(values, tuple):
-            values = tuple(v[0] if isinstance(v, tuple) else v for v in values)
+            processed_values = tuple(v[0] if isinstance(v, tuple) else v for v in values)  # type: ignore
         else:
-            values = (values,)
+            processed_values = (values,)
 
-        result = await connection.execute_query_dict(query, values)  # type: ignore
+        result = await connection.execute_query_dict(query, processed_values)  # type: ignore
 
         if result and len(result) > 0:
             if fetch_type == "single":
-                return result[0]  # type: ignore
+                return result[0]
             elif fetch_type == "multiple":
                 return result
         return 0 if fetch_type == "single" else []

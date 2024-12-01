@@ -1,3 +1,5 @@
+from typing import Any
+
 from tortoise import fields
 from tortoise.models import Model
 
@@ -17,10 +19,10 @@ class TellerCard(Model):
         table = "teller_card"
 
     @classmethod
-    async def get_teller_card_info_by_user_id(cls, user_id: str) -> dict:
+    async def get_teller_card_info_by_user_id(cls, user_id: str) -> Any:  # type ignore
         query = SELECT_TELLER_CARD_INFO_BY_USER_UUID_QUERY
         value = user_id
-        return await QueryExecutor.execute_query(query, values=value, fetch_type="single")
+        return await QueryExecutor.execute_query(query, values=value, fetch_type="single")  # type ignore
 
     @classmethod
     async def patch_teller_card_info_by_user_id(cls, user_id: str, badge_code: str, color_code: str) -> None:

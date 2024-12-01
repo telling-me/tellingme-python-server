@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 
+from app.v2.teller_cards.dtos.teller_card_dto import TellerCardDTO as TellerCardLogicDTO
 from common.base_models.base_dtos.base_response import BaseResponseDTO
 
 
@@ -12,7 +13,7 @@ class TellerCardResponseDTO(BaseResponseDTO):
     data: TellerCardDTO
 
     @classmethod
-    def builder(cls, teller_card: TellerCardDTO) -> "TellerCardResponseDTO":
+    def builder(cls, teller_card: TellerCardLogicDTO) -> "TellerCardResponseDTO":
         return cls(
             code=200,
             message="success",

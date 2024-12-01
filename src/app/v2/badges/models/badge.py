@@ -1,4 +1,7 @@
+from typing import Any
+
 from tortoise import fields
+from tortoise.fields import ForeignKeyRelation
 from tortoise.models import Model
 
 from app.v2.badges.querys.badge_query import (
@@ -7,32 +10,32 @@ from app.v2.badges.querys.badge_query import (
     SELECT_BADGE_CODE_BY_USER_UUID_QUERY,
     SELECT_BADGE_COUNT_BY_USER_UUID_QUERY,
 )
+from app.v2.users.models.user import User
 from common.utils.query_executor import QueryExecutor
 
 
 class Badge(Model):
-    badge_id = fields.BigIntField(pk=True)  # 자동 증가하는 기본 키
-    badge_code = fields.CharField(max_length=255, null=True)  # 배지 코드
-    user = fields.ForeignKeyField("models.User", related_name="badges", null=True)
+    badge_id = fields.BigIntField(pk=True)
+    badge_code = fields.CharField(max_length=255)
+    user: ForeignKeyRelation[User] = fields.ForeignKeyField("models.User", related_name="badges")
 
     class Meta:
         table = "badge"
 
     @classmethod
-    async def get_badge_count_by_user_id(cls, user_id: str) -> dict:
-
+    async def get_badge_count_by_user_id(cls, user_id: str) -> Any:
         query = SELECT_BADGE_COUNT_BY_USER_UUID_QUERY
         value = user_id
         return await QueryExecutor.execute_query(query, values=value, fetch_type="single")
 
     @classmethod
-    async def get_badges_with_details_by_user_id(cls, user_id: str) -> list:
+    async def get_badges_with_details_by_user_id(cls, user_id: str) -> Any:
         query = SELECT_BADGE_BY_USER_UUID_QUERY
         value = user_id
         return await QueryExecutor.execute_query(query, values=value, fetch_type="multiple")
 
     @classmethod
-    async def get_badge_codes_by_user_id(cls, user_id: str) -> list[dict]:
+    async def get_badge_codes_by_user_id(cls, user_id: str) -> Any:
         query = SELECT_BADGE_CODE_BY_USER_UUID_QUERY
         value = user_id
         return await QueryExecutor.execute_query(query, values=value, fetch_type="multiple")

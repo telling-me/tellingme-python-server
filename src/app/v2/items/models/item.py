@@ -1,4 +1,5 @@
 from tortoise import fields, models
+from tortoise.fields import ForeignKeyRelation
 
 
 class ItemInventory(models.Model):
@@ -24,8 +25,12 @@ class ProductInventory(models.Model):
 class ItemInventoryProductInventory(models.Model):
     item_inventory_product_inventory_id = fields.BigIntField(pk=True)
     quantity = fields.IntField()
-    item_inventory = fields.ForeignKeyField("models.ItemInventory", related_name="product_inventories")
-    product_inventory = fields.ForeignKeyField("models.ProductInventory", related_name="item_inventories")
+    item_inventory: ForeignKeyRelation[ItemInventory] = fields.ForeignKeyField(
+        "models.ItemInventory", related_name="product_inventories"
+    )
+    product_inventory: ForeignKeyRelation[ProductInventory] = fields.ForeignKeyField(
+        "models.ProductInventory", related_name="item_inventories"
+    )
     item_measurement = fields.CharField(max_length=255, null=True)
 
     class Meta:
@@ -39,6 +44,8 @@ class RewardInventory(models.Model):
     reward_description = fields.CharField(max_length=255, null=True)
     reward_name = fields.CharField(max_length=255, null=True)
 
+    item_inventories = fields.ReverseRelation["ItemInventoryRewardInventory"]
+
     class Meta:
         table = "reward_inventory"
 
@@ -46,13 +53,13 @@ class RewardInventory(models.Model):
 class ItemInventoryRewardInventory(models.Model):
     item_inventory_reward_invnetory_id = fields.BigIntField(pk=True)
     quantity = fields.IntField()
-    item_inventory = fields.ForeignKeyField(
+    item_inventory: ForeignKeyRelation[ItemInventory] = fields.ForeignKeyField(
         "models.ItemInventory",
         related_name="reward_inventories",
         on_delete=fields.CASCADE,
         db_column="item_inventory_id",
     )
-    reward_inventory = fields.ForeignKeyField(
+    reward_inventory: ForeignKeyRelation[RewardInventory] = fields.ForeignKeyField(
         "models.RewardInventory",
         related_name="item_inventories",
         on_delete=fields.CASCADE,
