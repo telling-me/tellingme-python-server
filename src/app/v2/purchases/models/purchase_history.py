@@ -108,6 +108,7 @@ class PurchaseHistory(Model):
     quantity = fields.IntField(default=1, description="Quantity of items purchased")
     is_refunded = fields.BooleanField(default=False, description="Whether the purchase was refunded")
     refunded_at = fields.DatetimeField(null=True, description="When the purchase was refunded")
+    receipt_data = fields.TextField(null=True, description="Raw receipt data from Apple")
     created_at = fields.DatetimeField(auto_now_add=True, description="When the purchase was made")
     updated_at = fields.DatetimeField(auto_now=True, description="Last updated timestamp")
 
@@ -140,6 +141,7 @@ class PurchaseHistory(Model):
         status: str,
         expires_date_ms: Optional[int],
         purchase_date_ms: int,
+        receipt_data: str,
         quantity: int = 1,
         is_refunded: bool = False,
         refunded_at: Optional[datetime] = None,
@@ -148,12 +150,12 @@ class PurchaseHistory(Model):
                 INSERT INTO purchase_history (
                     user_id, subscription_id, product_code, transaction_id, 
                     original_transaction_id, status, expires_date, purchase_date, 
-                    quantity, is_refunded, refunded_at, created_at, updated_at
+                    quantity, is_refunded, refunded_at, receipt_data, created_at, updated_at
                 )
                 VALUES (
                     UNHEX(REPLACE(%s, '-', '')), %s, %s, %s, 
                     %s, %s, FROM_UNIXTIME(%s / 1000), FROM_UNIXTIME(%s / 1000), 
-                    %s, %s, %s, NOW(), NOW()
+                    %s, %s, %s, %s, NOW(), NOW()
                 );
             """
 
@@ -169,6 +171,7 @@ class PurchaseHistory(Model):
             quantity,
             is_refunded,
             refunded_at,
+            receipt_data,
         )
 
         await QueryExecutor.execute_query(query, values=values, fetch_type="single")

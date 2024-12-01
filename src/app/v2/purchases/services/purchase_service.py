@@ -49,6 +49,7 @@ class PurchaseService:
             expires_date_ms=expires_date_ms,
             purchase_date_ms=purchase_date_ms,
             quantity=int(latest_receipt_info.get("quantity", 1)),
+            receipt_data=receipt_data,
         )
 
         item_inventory_products = await self._validate_purchase(product_code=product_code)
@@ -108,6 +109,7 @@ class PurchaseService:
         expires_date_ms: int,
         purchase_date_ms: int,
         quantity: int,
+        receipt_data: str,
     ) -> None:
         await PurchaseHistory.create_purchase_history(
             user_id=user_id,
@@ -121,6 +123,7 @@ class PurchaseService:
             quantity=quantity,
             is_refunded=False,
             refunded_at=None,
+            receipt_data=receipt_data,
         )
 
     @staticmethod
