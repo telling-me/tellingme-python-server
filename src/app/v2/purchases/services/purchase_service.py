@@ -1,4 +1,4 @@
-from typing import Any, cast
+from typing import Any, Optional, cast
 
 import httpx
 from fastapi import HTTPException
@@ -18,6 +18,10 @@ class PurchaseService:
         response = await self._validate_apple_receipt(receipt_data=receipt_data)
 
         latest_receipt_info = self._extract_latest_receipt_info(response)
+
+        if latest_receipt_info is None:
+            raise ValueError("No valid receipt information found.")
+
         transaction_id = latest_receipt_info["transaction_id"]
         original_transaction_id = latest_receipt_info["original_transaction_id"]
         expires_date_ms = int(latest_receipt_info.get("expires_date_ms", 0))
@@ -52,8 +56,12 @@ class PurchaseService:
         await self._process_purchase(user_id=user_id, item_inventory_products=item_inventory_products)
 
     @staticmethod
-    def _extract_latest_receipt_info(response: dict) -> dict:
-        return response.get("latest_receipt_info", [])[0]
+    def _extract_latest_receipt_info(response: dict[str, Any]) -> dict[str, Any] | None:
+        latest_receipt_info = response.get("latest_receipt_info")
+
+        if isinstance(latest_receipt_info, list) and latest_receipt_info:
+            return latest_receipt_info[0] or {}
+        return None
 
     @staticmethod
     async def _validate_apple_receipt(receipt_data: str) -> dict[str, Any]:
@@ -81,7 +89,7 @@ class PurchaseService:
             product_code=product_code,
             transaction_id=transaction_id,
             expires_date_ms=expires_date_ms,
-            status=SubscriptionStatus.ACTIVE,
+            status=SubscriptionStatus.ACTIVE.value,
         )
 
     @staticmethod
@@ -107,7 +115,7 @@ class PurchaseService:
             product_code=product_code,
             transaction_id=transaction_id,
             original_transaction_id=original_transaction_id,
-            status=PurchaseStatus.AVAILABLE,
+            status=PurchaseStatus.AVAILABLE.value,
             expires_date_ms=expires_date_ms,
             purchase_date_ms=purchase_date_ms,
             quantity=quantity,

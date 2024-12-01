@@ -55,7 +55,7 @@ class Subscription(Model):
         product_code: str,
         transaction_id: str,
         expires_date_ms: int,
-        status: SubscriptionStatus,
+        status: str,
     ) -> "Subscription":
         query = """
                 INSERT INTO subscription (user_id, product_code, status, current_transaction_id, expires_date, auto_renew_status)
@@ -79,7 +79,9 @@ class Subscription(Model):
         )
 
     @classmethod
-    async def update_subscription(cls, user_id: str, product_code: str, transaction_id: str, expires_date_ms: int):
+    async def update_subscription(
+        cls, user_id: str, product_code: str, transaction_id: str, expires_date_ms: int
+    ) -> None:
         expires_date = datetime.fromtimestamp(expires_date_ms / 1000.0)
 
         query = """
@@ -135,7 +137,7 @@ class PurchaseHistory(Model):
         product_code: str,
         transaction_id: str,
         original_transaction_id: str,
-        status: PurchaseStatus,
+        status: str,
         expires_date_ms: Optional[int],
         purchase_date_ms: int,
         quantity: int = 1,
