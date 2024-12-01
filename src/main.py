@@ -10,7 +10,6 @@ db_client_logger = logging.getLogger("tortoise.db_client")
 db_client_logger.setLevel(logging.DEBUG)
 
 app = FastAPI()
-
 post_construct(app)
 
 

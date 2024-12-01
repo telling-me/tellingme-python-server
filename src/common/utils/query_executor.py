@@ -9,7 +9,7 @@ class QueryExecutor:
     @staticmethod
     async def execute_query(
         query: str,
-        values: Union[tuple[Union[str, int, float, datetime], ...], str] = (),
+        values: Any = (),
         fetch_type: str = "multiple",
     ) -> Any:  # type ignore
         """

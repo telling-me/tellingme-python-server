@@ -12,7 +12,6 @@ TORTOISE_APP_MODELS = [
     "app.v2.badges.models.badge",
     "app.v2.colors.models.color",
     "app.v2.answers.models.answer",
-    # "app.v2.payments.models.cheese_manager",
     "app.v2.teller_cards.models.teller_card",
     "app.v2.levels.models.level",
     "app.v2.cheese_managers.models.cheese_manager",
@@ -20,6 +19,7 @@ TORTOISE_APP_MODELS = [
     "app.v2.missions.models.mission",
     "app.v2.likes.models.like",
     "app.v2.emotions.models.emotion",
+    "app.v2.purchases.models.purchase_history",
 ]
 
 TORTOISE_ORM = {

@@ -18,7 +18,7 @@ from common.utils.query_executor import QueryExecutor
 
 
 class User(Model):
-    user_id = fields.BinaryField(pk=True)  # BINARY(16)로 저장
+    user_id = fields.CharField(max_length=255, pk=True, description="Primary key for the User")
     allow_notification = fields.BooleanField(null=True)
     birth_date = fields.CharField(max_length=8, null=True)
     created_time = fields.DatetimeField(auto_now_add=True)
