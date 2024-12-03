@@ -2,6 +2,7 @@ from typing import Any
 
 from app.v2.emotions.dtos.response import EmotionDTO, EmotionListResponseDTO
 from app.v2.emotions.models.emotion import Emotion, EmotionInventory
+from app.v2.users.services.user_service import UserService
 
 emotion_mapping = {
     "EM_HAPPY": 1,
@@ -34,5 +35,19 @@ class EmotionService:
 
     @classmethod
     async def mapping_emotion_list(cls, user_id: str) -> EmotionDTO:
-        emotions = await cls.get_emotions(user_id=user_id)
-        return EmotionDTO.build(emotion_list=[emotion_mapping[emotion["emotion_code"]] for emotion in emotions])
+        user = await UserService.get_user_profile(user_id=user_id)
+
+        if user.is_premium:
+            emotions = await cls.get_emotion_inventory()
+        else:
+            emotions = await cls.get_emotions(user_id=user_id)
+
+        return EmotionDTO.build(emotion_list=await cls.get_mapped_emotions(emotions))
+
+    @classmethod
+    async def get_mapped_emotions(cls, emotions: list[dict[str, str]]) -> list[int]:
+        return [
+            value
+            for value in (emotion_mapping.get(emotion["emotion_code"]) for emotion in emotions)
+            if value is not None
+        ]

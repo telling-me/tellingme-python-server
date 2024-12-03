@@ -5,9 +5,7 @@ from tortoise.expressions import Q
 from tortoise.fields import ForeignKeyRelation
 from tortoise.functions import Sum
 from tortoise.models import Model
-from tortoise.transactions import atomic
 
-from app.v2.cheese_managers.dtos.cheese_dto import CheeseAmountResult
 from app.v2.cheese_managers.models.cheese_status import CheeseStatus
 
 
