@@ -71,6 +71,7 @@ async def mobile_my_page_handler(user_id: str) -> MyPageResponseDTO:
     )
 
     cheese_amount = await CheeseService.get_cheese_balance(cheese_manager_id=user["cheese_manager_id"])
+    is_premium = user["is_premium"] != b"\x00"
 
     user_profile_data = UserProfileWithLevel.builder(
         userProfile=UserProfileDTO.builder(
@@ -79,7 +80,7 @@ async def mobile_my_page_handler(user_id: str) -> MyPageResponseDTO:
             badgeCode=teller_card.badgeCode,
             badgeCount=badge_count,
             answerCount=answer_count,
-            premium=bool(user["is_premium"]),
+            premium=is_premium,
         ),
         level=level,
     )
