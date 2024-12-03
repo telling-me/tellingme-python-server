@@ -1,3 +1,5 @@
+from typing import Optional
+
 from app.v2.badges.models.badge import BadgeInventory
 from app.v2.colors.models.color import ColorInventory
 from app.v2.teller_cards.dtos.teller_card_dto import TellerCardDTO
@@ -11,7 +13,9 @@ class TellerCardService:
         return TellerCardDTO.builder(teller_cards_raw)
 
     @classmethod
-    async def patch_teller_card(cls, user_id: str, badge_code: str, color_code: str) -> None:
+    async def patch_teller_card(
+        cls, user_id: str, badge_code: Optional[str] = None, color_code: Optional[str] = None
+    ) -> None:
         await TellerCard.patch_teller_card_info_by_user_id(
             user_id=user_id, badge_code=badge_code, color_code=color_code
         )
@@ -23,7 +27,8 @@ class TellerCardService:
         badge_codes = [badge["badge_code"] for badge in badge_code_list]
         color_codes = [color["color_code"] for color in color_code_list]
 
-        if badge_code not in badge_codes:
+        if badge_code and badge_code not in badge_codes:
             raise ValueError("Invalid badge code")
-        if color_code not in color_codes:
+
+        if color_code and color_code not in color_codes:
             raise ValueError("Invalid color code")

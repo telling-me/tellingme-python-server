@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Optional
 
 from tortoise import fields
 from tortoise.models import Model
@@ -25,7 +25,9 @@ class TellerCard(Model):
         return await QueryExecutor.execute_query(query, values=value, fetch_type="single")  # type ignore
 
     @classmethod
-    async def patch_teller_card_info_by_user_id(cls, user_id: str, badge_code: str, color_code: str) -> None:
+    async def patch_teller_card_info_by_user_id(
+        cls, user_id: str, badge_code: Optional[str] = None, color_code: Optional[str] = None
+    ) -> None:
         query = PATCH_TELLER_CARD_QUERY
         values = (badge_code, color_code, user_id)
         await QueryExecutor.execute_query(query, values=values, fetch_type="single")
