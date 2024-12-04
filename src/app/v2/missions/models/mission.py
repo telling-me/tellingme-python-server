@@ -16,6 +16,9 @@ class UserMission(Model):
     progress_count = fields.IntField(default=0)
     user: ForeignKeyRelation[User] = fields.ForeignKeyField("models.User", related_name="missions")
 
+    class Meta:
+        table = "user_mission"
+
     @classmethod
     async def get_user_missions_by_condition_type(cls, user_id: str) -> Any:
         query = SELECT_USER_MISSIONS_QUERY

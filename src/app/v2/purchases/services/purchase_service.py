@@ -1,3 +1,5 @@
+import uuid
+from datetime import datetime, timedelta, timezone
 from typing import Any, Optional, cast
 
 import httpx
@@ -6,6 +8,7 @@ from tortoise.exceptions import DoesNotExist
 from tortoise.transactions import atomic
 
 from app.v2.items.models.item import ItemInventory, ItemInventoryProductInventory, ProductInventory
+from app.v2.purchases.dtos.purchase_dto import ReceiptInfoDTO
 from app.v2.purchases.models.purchase_history import PurchaseHistory, Subscription
 from app.v2.purchases.models.purchase_status import PurchaseStatus, SubscriptionStatus, purchase_mapping
 from app.v2.users.services.user_service import UserService
@@ -22,20 +25,16 @@ class PurchaseService:
         if latest_receipt_info is None:
             raise ValueError("No valid receipt information found.")
 
-        transaction_id = latest_receipt_info["transaction_id"]
-        original_transaction_id = latest_receipt_info["original_transaction_id"]
-        expires_date_ms = int(latest_receipt_info.get("expires_date_ms", 0))
-        purchase_date_ms = int(latest_receipt_info.get("purchase_date_ms", 0))
-        product_code = purchase_mapping.get(latest_receipt_info["product_id"], latest_receipt_info["product_id"])
+        receipt_info = await self._parse_receipt_info(latest_receipt_info)
 
         await self._create_or_update_subscription(
             user_id=user_id,
-            product_code=product_code,
-            transaction_id=transaction_id,
-            expires_date_ms=expires_date_ms,
+            product_code=receipt_info.product_code,
+            transaction_id=receipt_info.transaction_id,
+            expires_date_ms=receipt_info.expires_date_ms,
         )
 
-        subscription = await self._get_subscription(user_id, product_code)
+        subscription = await self._get_subscription(user_id, receipt_info.product_code)
 
         if subscription is None:
             raise DoesNotExist("Subscription not found")
@@ -43,16 +42,16 @@ class PurchaseService:
         await self._create_purchase_history(
             user_id=user_id,
             subscription=subscription,
-            product_code=product_code,
-            transaction_id=transaction_id,
-            original_transaction_id=original_transaction_id,
-            expires_date_ms=expires_date_ms,
-            purchase_date_ms=purchase_date_ms,
-            quantity=int(latest_receipt_info.get("quantity", 1)),
+            product_code=receipt_info.product_code,
+            transaction_id=receipt_info.transaction_id,
+            original_transaction_id=receipt_info.original_transaction_id,
+            expires_date_ms=receipt_info.expires_date_ms,
+            purchase_date_ms=receipt_info.purchase_date_ms,
+            quantity=receipt_info.quantity,
             receipt_data=receipt_data,
         )
 
-        item_inventory_products = await self._validate_purchase(product_code=product_code)
+        item_inventory_products = await self._validate_purchase(product_code=receipt_info.product_code)
 
         await self._process_purchase(user_id=user_id, item_inventory_products=item_inventory_products)
 
@@ -83,7 +82,10 @@ class PurchaseService:
 
     @staticmethod
     async def _create_or_update_subscription(
-        user_id: str, product_code: str, transaction_id: str, expires_date_ms: int
+        user_id: str,
+        product_code: str,
+        transaction_id: str,
+        expires_date_ms: int,
     ) -> None:
         await Subscription.create_or_update_subscription(
             user_id=user_id,
@@ -163,3 +165,65 @@ class PurchaseService:
             #     await CheeseService.add_cheese(cheese_manager_id=cheese_manager_id, amount=quantity)
             else:
                 raise ValueError(f"Invalid item category for purchase: {item.item_category}")
+
+    async def renew_subscription(self) -> dict[str, Any]:
+        today = datetime.now(timezone(timedelta(hours=9)))
+
+        subscriptions_to_renew = await Subscription.filter(
+            expires_date__lte=today + timedelta(days=1), status="ACTIVE"
+        ).select_related("user")
+
+        for subscription in subscriptions_to_renew:
+
+            purchase_history = await PurchaseHistory.filter(transaction_id=subscription.current_transaction_id).first()
+
+            if purchase_history:
+                response = await self._validate_apple_receipt(receipt_data=purchase_history.receipt_data)
+
+                latest_receipt_info = self._extract_latest_receipt_info(response)
+
+                if latest_receipt_info is None:
+                    raise ValueError("No valid receipt information found.")
+
+                receipt_data = await self._parse_receipt_info(latest_receipt_info)
+
+                if not await self._check_auto_renewal(response.get("pending_renewal_info", [])):
+                    continue
+
+                await self._update_subscription_expiration(
+                    subscription=subscription, expires_date_ms=receipt_data.expires_date_ms
+                )
+
+                await self._create_purchase_history(
+                    user_id=str(uuid.UUID(bytes=subscription.user.user_id)),  # type: ignore
+                    subscription=subscription,
+                    product_code=receipt_data.product_code,
+                    transaction_id=receipt_data.transaction_id,
+                    original_transaction_id=receipt_data.original_transaction_id,
+                    expires_date_ms=receipt_data.expires_date_ms,
+                    purchase_date_ms=receipt_data.purchase_date_ms,
+                    quantity=receipt_data.quantity,
+                    receipt_data=purchase_history.receipt_data,
+                )
+
+        return {"message": "Subscription renewal completed successfully"}
+
+    @staticmethod
+    async def _update_subscription_expiration(subscription: Subscription, expires_date_ms: int) -> None:
+        new_expires_date = datetime.fromtimestamp(expires_date_ms / 1000)
+        subscription.expires_date = new_expires_date
+        await subscription.save()
+
+    @staticmethod
+    async def _parse_receipt_info(latest_receipt_info: dict[str, Any]) -> ReceiptInfoDTO:
+        return ReceiptInfoDTO.build(latest_receipt_info)
+
+    @staticmethod
+    async def _check_auto_renewal(pending_renewal_info: list[dict[str, Any]]) -> bool:
+        if pending_renewal_info:
+            auto_renew_status = pending_renewal_info[0].get("auto_renew_status")
+            expiration_intent = pending_renewal_info[0].get("expiration_intent")
+
+            if auto_renew_status == "0" or expiration_intent == "1":
+                return False
+        return True

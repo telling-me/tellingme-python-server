@@ -1,8 +1,8 @@
 from fastapi import FastAPI
 
-from core.tasks.scheduler import start_scheduler
 from common.handlers.exception_handler import attach_exception_handlers
 from common.handlers.router_handler import attach_router_handlers
+from common.utils.scheduler import start_scheduler
 from core.database.database_settings import database_initialize
 
 

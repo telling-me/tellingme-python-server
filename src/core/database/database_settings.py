@@ -7,7 +7,6 @@ from core.configs import settings
 TORTOISE_APP_MODELS = [
     "app.v2.questions.models.question",
     "app.v2.users.models.user",
-    "app.v2.users.models.user_mission",
     "app.v2.users.models.refresh_token",
     "app.v2.badges.models.badge",
     "app.v2.colors.models.color",

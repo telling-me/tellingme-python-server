@@ -1,15 +1,14 @@
-from apscheduler.jobstores.redis import RedisJobStore
-from apscheduler.schedulers.background import BackgroundScheduler
-
-
 import logging
 
-from celery_settings import celery_app
+from apscheduler.jobstores.redis import RedisJobStore  # type: ignore
+from apscheduler.schedulers.background import BackgroundScheduler  # type: ignore
+
+from core.configs.celery_settings import celery_app
 
 logger = logging.getLogger(__name__)
 
 
-def execute_daily_task():
+def execute_daily_task() -> None:
     celery_app.send_task("daily_task")
 
 
@@ -24,8 +23,8 @@ def start_scheduler():
     scheduler.add_job(
         func=execute_daily_task,
         trigger="cron",
-        hour=11,
-        minute=9,
+        hour=1,
+        minute=11,
         id="daily_task",
         replace_existing=True,
     )

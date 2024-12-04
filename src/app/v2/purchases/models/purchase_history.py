@@ -14,7 +14,6 @@ class Subscription(Model):
     subscription_id = fields.BigIntField(pk=True, description="Primary key for the Subscription")
     product_code = fields.CharField(max_length=255, null=False, description="Product code of the subscription")
     status = fields.CharField(max_length=255, null=False, description="Status of the subscription")
-    auto_renew_status = fields.BooleanField(default=True, description="Whether auto-renewal is active")
     current_transaction_id = fields.CharField(max_length=255, null=False, description="Current transaction ID")
     expires_date = fields.DatetimeField(null=False, description="Expiration date of the subscription")
     created_at = fields.DatetimeField(auto_now_add=True, description="When the subscription was created")
@@ -58,15 +57,14 @@ class Subscription(Model):
         status: str,
     ) -> "Subscription":
         query = """
-                INSERT INTO subscription (user_id, product_code, status, current_transaction_id, expires_date, auto_renew_status)
-                VALUES (UNHEX(REPLACE(%s, '-', '')), %s, %s, %s, FROM_UNIXTIME(%s / 1000), %s)
+                INSERT INTO subscription (user_id, product_code, status, current_transaction_id, expires_date)
+                VALUES (UNHEX(REPLACE(%s, '-', '')), %s, %s, %s, FROM_UNIXTIME(%s / 1000))
                 ON DUPLICATE KEY UPDATE
                     current_transaction_id = VALUES(current_transaction_id),
                     expires_date = VALUES(expires_date),
                     status = VALUES(status);
             """
-        auto_renew_status = True
-        values = (user_id, product_code, status, transaction_id, expires_date_ms, auto_renew_status)
+        values = (user_id, product_code, status, transaction_id, expires_date_ms)
 
         await QueryExecutor.execute_query(query, values=values, fetch_type="none")
 

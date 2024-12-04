@@ -21,7 +21,7 @@ class TellerCardService:
         )
 
     @classmethod
-    async def validate_teller_card(cls, badge_code: str, color_code: str) -> None:
+    async def validate_teller_card(cls, badge_code: Optional[str], color_code: Optional[str]) -> None:
         badge_code_list = await BadgeInventory.all().values("badge_code")
         color_code_list = await ColorInventory.all().values("color_code")
         badge_codes = [badge["badge_code"] for badge in badge_code_list]

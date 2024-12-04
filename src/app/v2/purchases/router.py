@@ -33,3 +33,10 @@ async def receipt_test(
     purchase_service: PurchaseService = Depends(),
 ) -> dict[str, Any]:
     return await purchase_service._validate_apple_receipt(receipt_data=receipt.receiptData)
+
+
+@router.get("/renew-test")
+async def renew_test(
+    purchase_service: PurchaseService = Depends(),
+) -> dict[str, Any]:
+    return await purchase_service.renew_subscription()
