@@ -4,6 +4,7 @@ from typing import Any, Optional, cast
 
 import httpx
 from fastapi import HTTPException
+from tortoise import Tortoise
 from tortoise.exceptions import DoesNotExist
 from tortoise.transactions import atomic
 
@@ -11,6 +12,7 @@ from app.v2.items.models.item import ItemInventory, ItemInventoryProductInventor
 from app.v2.purchases.dtos.purchase_dto import ReceiptInfoDTO
 from app.v2.purchases.models.purchase_history import PurchaseHistory, Subscription
 from app.v2.purchases.models.purchase_status import PurchaseStatus, SubscriptionStatus, purchase_mapping
+from app.v2.users.models.user import User
 from app.v2.users.services.user_service import UserService
 from core.configs import settings
 
@@ -227,3 +229,26 @@ class PurchaseService:
             if auto_renew_status == "0" or expiration_intent == "1":
                 return False
         return True
+
+    @staticmethod
+    async def expire_subscriptions() -> None:
+        today = datetime.now().date()
+
+        expired_subscriptions = (
+            await Subscription.filter(
+                status=SubscriptionStatus.ACTIVE.value,
+                expires_date__lt=today,
+            )
+            .select_related("user")
+            .all()
+        )
+
+        for subscription in expired_subscriptions:
+            subscription.status = SubscriptionStatus.EXPIRED.value
+
+        user_ids = [subscription.user.user_id for subscription in expired_subscriptions]
+
+        if user_ids:
+            if expired_subscriptions:
+                await Subscription.bulk_update(expired_subscriptions, fields=["status"])
+            await User.bulk_update_is_premium(user_ids)  # type: ignore

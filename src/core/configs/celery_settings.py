@@ -5,7 +5,7 @@ from celery import Celery
 from tortoise import Tortoise
 
 from common.tasks.mission_task import mission_reset_task
-from common.tasks.renew_subscription_task import renew_subscription_task
+from common.tasks.renew_subscription_task import renew_subscription_task, expire_subscription_task
 from core.database.database_settings import TORTOISE_ORM
 
 celery_app = Celery(
@@ -34,11 +34,12 @@ async def execute_async_daily_task() -> None:
     try:
         await mission_reset_task()
         await renew_subscription_task()
+        await expire_subscription_task()
     finally:
         await close_celery_connections()
 
 
-async def initialize_celery():
+async def initialize_celery() -> None:
     logger = logging.getLogger(__name__)
     logger.info(f"Current path: 여기")
     logging.basicConfig(level=logging.DEBUG)
@@ -48,7 +49,7 @@ async def initialize_celery():
     await Tortoise.init(config=TORTOISE_ORM)
 
 
-async def close_celery_connections():
+async def close_celery_connections() -> None:
     await Tortoise.close_connections()
 
 

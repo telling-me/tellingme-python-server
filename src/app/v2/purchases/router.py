@@ -40,3 +40,10 @@ async def renew_test(
     purchase_service: PurchaseService = Depends(),
 ) -> dict[str, Any]:
     return await purchase_service.renew_subscription()
+
+
+@router.get("/expired-test")
+async def expired_test(
+    purchase_service: PurchaseService = Depends(),
+) -> None:
+    await purchase_service.expire_subscriptions()

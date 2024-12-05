@@ -1,7 +1,8 @@
+import uuid
 from datetime import datetime
 from typing import Any, Optional
 
-from tortoise import fields
+from tortoise import Tortoise, fields
 from tortoise.fields import ForeignKeyRelation
 from tortoise.models import Model
 
@@ -81,3 +82,20 @@ class User(Model):
         current_time = datetime.now()
         values = (int(is_premium), current_time, user_id)
         await QueryExecutor.execute_query(query, values=values, fetch_type="single")
+
+    @classmethod
+    def format_user_id(cls, user_id_bytes: bytes) -> str:
+        return str(uuid.UUID(bytes=user_id_bytes))
+
+    @classmethod
+    def format_user_ids(cls, user_ids: list[bytes]) -> str:
+        return ", ".join([f"UNHEX(REPLACE('{str(uuid.UUID(bytes=user_id))}', '-', ''))" for user_id in user_ids])
+
+    @classmethod
+    async def bulk_update_is_premium(cls, user_ids: list[bytes]) -> None:
+        query = f"""
+            UPDATE user
+            SET is_premium = FALSE
+            WHERE user_id IN ({cls.format_user_ids(user_ids)});
+        """
+        await Tortoise.get_connection("default").execute_query(query)

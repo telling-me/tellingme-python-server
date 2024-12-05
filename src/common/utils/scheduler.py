@@ -12,7 +12,7 @@ def execute_daily_task() -> None:
     celery_app.send_task("daily_task")
 
 
-def start_scheduler():
+def start_scheduler() -> None:
     scheduler = BackgroundScheduler(
         jobstores={"default": RedisJobStore(host="localhost", port=6379, db=0)},
         timezone="Asia/Seoul",
@@ -23,8 +23,8 @@ def start_scheduler():
     scheduler.add_job(
         func=execute_daily_task,
         trigger="cron",
-        hour=1,
-        minute=11,
+        hour=00,
+        minute=16,
         id="daily_task",
         replace_existing=True,
     )
