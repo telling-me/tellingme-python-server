@@ -38,8 +38,8 @@ async def receipt_test(
 @router.get("/renew-test")
 async def renew_test(
     purchase_service: PurchaseService = Depends(),
-) -> dict[str, Any]:
-    return await purchase_service.renew_subscription()
+) -> None:
+    return await purchase_service.process_subscriptions_renewal()
 
 
 @router.get("/expired-test")

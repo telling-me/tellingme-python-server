@@ -5,7 +5,6 @@ from tortoise import fields
 from tortoise.fields import ForeignKeyRelation
 from tortoise.models import Model
 
-from app.v2.purchases.models.purchase_status import PurchaseStatus, SubscriptionStatus
 from app.v2.users.models.user import User
 from common.utils.query_executor import QueryExecutor
 
@@ -80,8 +79,6 @@ class Subscription(Model):
     async def update_subscription(
         cls, user_id: str, product_code: str, transaction_id: str, expires_date_ms: int
     ) -> None:
-        expires_date = datetime.fromtimestamp(expires_date_ms / 1000.0)
-
         query = """
             UPDATE subscription
             SET current_transaction_id = %s,
@@ -104,8 +101,6 @@ class PurchaseHistory(Model):
     expires_date = fields.DatetimeField(null=True, description="Expiration date of the purchase")
     purchase_date = fields.DatetimeField(null=False, description="Date of the purchase")
     quantity = fields.IntField(default=1, description="Quantity of items purchased")
-    is_refunded = fields.BooleanField(default=False, description="Whether the purchase was refunded")
-    refunded_at = fields.DatetimeField(null=True, description="When the purchase was refunded")
     receipt_data = fields.TextField(null=True, description="Raw receipt data from Apple")
     created_at = fields.DatetimeField(auto_now_add=True, description="When the purchase was made")
     updated_at = fields.DatetimeField(auto_now=True, description="Last updated timestamp")
@@ -141,19 +136,17 @@ class PurchaseHistory(Model):
         purchase_date_ms: int,
         receipt_data: str,
         quantity: int = 1,
-        is_refunded: bool = False,
-        refunded_at: Optional[datetime] = None,
     ) -> None:
         query = """
                 INSERT INTO purchase_history (
                     user_id, subscription_id, product_code, transaction_id, 
                     original_transaction_id, status, expires_date, purchase_date, 
-                    quantity, is_refunded, refunded_at, receipt_data, created_at, updated_at
+                    quantity, receipt_data, created_at, updated_at
                 )
                 VALUES (
                     UNHEX(REPLACE(%s, '-', '')), %s, %s, %s, 
                     %s, %s, FROM_UNIXTIME(%s / 1000), FROM_UNIXTIME(%s / 1000), 
-                    %s, %s, %s, %s, NOW(), NOW()
+                    %s, %s, NOW(), NOW()
                 );
             """
 
@@ -167,8 +160,6 @@ class PurchaseHistory(Model):
             expires_date_ms,
             purchase_date_ms,
             quantity,
-            is_refunded,
-            refunded_at,
             receipt_data,
         )
 

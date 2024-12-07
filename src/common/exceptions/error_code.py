@@ -11,6 +11,8 @@ class ErrorCode(Enum):
     NO_INVENTORY_FOR_PRODUCT = (4041, "이 상품에 대한 재고가 없습니다.")
     PRODUCT_NOT_FOUND = (4042, "해당 상품을 찾을 수 없습니다.")
 
+    NO_VALID_RECEIPT = (4006, "유효한 영수증이 없습니다.")
+
     def __init__(self, code: int, message: str) -> None:
         self._code = code
         self._message = message
