@@ -24,7 +24,7 @@ def start_scheduler() -> None:
         func=execute_daily_task,
         trigger="cron",
         hour=00,
-        minute=28,
+        minute=00,
         id="daily_task",
         replace_existing=True,
     )
