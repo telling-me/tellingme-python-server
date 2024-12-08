@@ -52,7 +52,7 @@ class PurchaseService:
         await self._process_purchase(
             user_id=user_id,
             item_inventory_products=item_inventory_products,
-            status=purchase_status,
+            status=subscription_status,
         )
 
         user = await UserService.get_user_profile(user_id=user_id)
