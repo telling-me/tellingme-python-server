@@ -7,7 +7,8 @@ SELECT_USER_PROFILE_BY_USER_ID_QUERY = f"""
     SELECT 
         u.nickname,
         u.is_premium,
-        u.cheese_manager_id
+        u.cheese_manager_id,
+        u.allow_notification
     FROM user u
     WHERE {USER_ID_QUERY}
 """

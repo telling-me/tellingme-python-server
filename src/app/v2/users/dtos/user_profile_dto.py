@@ -8,6 +8,7 @@ class UserProfileDTO(BaseModel):
     badgeCount: int
     answerCount: int
     premium: bool
+    allowNotification: bool
 
     @classmethod
     def builder(
@@ -18,6 +19,7 @@ class UserProfileDTO(BaseModel):
         badgeCount: int,
         answerCount: int,
         premium: bool,
+        allow_notification: bool,
     ) -> "UserProfileDTO":
         return cls(
             nickname=nickname,
@@ -26,4 +28,5 @@ class UserProfileDTO(BaseModel):
             badgeCount=badgeCount,
             answerCount=answerCount,
             premium=premium,
+            allowNotification=allow_notification,
         )

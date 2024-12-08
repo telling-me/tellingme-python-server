@@ -12,10 +12,12 @@ class UserDTO(BaseModel):
     cheese_manager_id: Optional[int] = None
     teller_card_id: Optional[int] = None
     level_id: Optional[int] = None
+    allow_notification: Optional[bool] = None
 
     @classmethod
     def build(cls, user: dict[str, Any]) -> "UserDTO":
         is_premium = user.get("is_premium") != b"\x00"
+        allow_notification = user.get("allow_notification") != b"\x00"
         return cls(
             user_id=user.get("user_id", None),
             nickname=user.get("nickname", None),
@@ -25,4 +27,5 @@ class UserDTO(BaseModel):
             cheese_manager_id=user.get("cheese_manager_id", None),
             teller_card_id=user.get("teller_card_id", None),
             level_id=user.get("level_id", None),
+            allow_notification=allow_notification,
         )
