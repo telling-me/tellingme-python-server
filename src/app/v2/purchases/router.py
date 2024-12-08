@@ -28,7 +28,12 @@ async def receipt_test(
     receipt: ReceiptRequestDTO,
     purchase_service: PurchaseService = Depends(),
 ) -> dict[str, Any]:
-    return await purchase_service._validate_apple_receipt(receipt_data=receipt.receiptData)
+    data = await purchase_service._validate_apple_receipt(receipt_data=receipt.receiptData)
+    return {
+        "code": 200,
+        "data": data,
+        "message": "정상처리되었습니다",
+    }
 
 
 @router.get("/renew-test")
