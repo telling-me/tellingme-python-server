@@ -1,3 +1,4 @@
+import time
 import uuid
 from datetime import date, datetime, timedelta, timezone
 from typing import Any, Optional, cast
@@ -8,7 +9,7 @@ from tortoise.exceptions import DoesNotExist
 from tortoise.transactions import atomic
 
 from app.v2.items.models.item import ItemInventory, ItemInventoryProductInventory, ProductInventory
-from app.v2.purchases.dtos.purchase_dto import ReceiptInfoDTO, PurchaseDTO, PurchaseResponseDTO
+from app.v2.purchases.dtos.purchase_dto import ReceiptInfoDTO, PurchaseResponseDTO
 from app.v2.purchases.models.purchase_history import PurchaseHistory, Subscription
 from app.v2.purchases.models.purchase_status import PurchaseStatus, SubscriptionStatus
 from app.v2.users.models.user import User
@@ -20,7 +21,7 @@ from core.configs import settings
 
 class PurchaseService:
     @atomic()
-    async def process_apple_purchase(self, receipt_data: str, user_id: str) -> str:
+    async def process_apple_purchase(self, receipt_data: str, user_id: str) -> PurchaseResponseDTO:
         response = await self._validate_apple_receipt(receipt_data=receipt_data)
 
         latest_receipt_info = self._extract_latest_receipt_info(response)
@@ -30,9 +31,7 @@ class PurchaseService:
 
         receipt_info = await self._parse_receipt_info(latest_receipt_info)
 
-        subscription_status = self.get_subscription_status(receipt_info.cancellation_date_ms)
-
-        purchase_status = self.get_purchase_status(receipt_info.cancellation_date_ms)
+        subscription_status = self.get_subscription_status(receipt_info)
 
         await self._create_or_update_subscription(
             user_id=user_id,
@@ -110,9 +109,15 @@ class PurchaseService:
         )
 
     @staticmethod
-    def get_subscription_status(cancellation_date_ms: Optional[int]) -> str:
-        if cancellation_date_ms:
+    def get_subscription_status(receipt: ReceiptInfoDTO) -> str:
+        current_time_ms = int(time.time() * 1000)
+
+        if receipt.cancellation_date_ms:
             return SubscriptionStatus.CANCELED.value
+
+        if receipt.expires_date_ms < current_time_ms:
+            return SubscriptionStatus.EXPIRED.value
+
         return SubscriptionStatus.ACTIVE.value
 
     @staticmethod
@@ -188,7 +193,7 @@ class PurchaseService:
             if item.item_category == "SUBSCRIPTION":
                 if status == SubscriptionStatus.ACTIVE.value:
                     await UserService.set_is_premium(user_id=user_id, is_premium=True)
-                if status == SubscriptionStatus.CANCELED.value:
+                if status == SubscriptionStatus.CANCELED.value or status == SubscriptionStatus.EXPIRED.value:
                     await UserService.set_is_premium(user_id=user_id, is_premium=False)
             # elif item.item_category == "CHEESE":
             #     await CheeseService.add_cheese(cheese_manager_id=cheese_manager_id, amount=quantity)
