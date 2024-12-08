@@ -198,7 +198,12 @@ class MissionService:
     @staticmethod
     async def check_daily_post(user_id: str) -> bool:
         answer = await Answer.get_most_recent_answer_by_user_id(user_id=user_id)
+
+        if answer == 0:
+            return False
+
         answer_date = answer.get("date")
+
         return answer_date == date.today()
 
     async def reward_user_for_mission(
