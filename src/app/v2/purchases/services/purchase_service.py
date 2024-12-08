@@ -8,7 +8,7 @@ from tortoise.exceptions import DoesNotExist
 from tortoise.transactions import atomic
 
 from app.v2.items.models.item import ItemInventory, ItemInventoryProductInventory, ProductInventory
-from app.v2.purchases.dtos.purchase_dto import ReceiptInfoDTO
+from app.v2.purchases.dtos.purchase_dto import ReceiptInfoDTO, PurchaseDTO, PurchaseResponseDTO
 from app.v2.purchases.models.purchase_history import PurchaseHistory, Subscription
 from app.v2.purchases.models.purchase_status import PurchaseStatus, SubscriptionStatus
 from app.v2.users.models.user import User
@@ -20,7 +20,7 @@ from core.configs import settings
 
 class PurchaseService:
     @atomic()
-    async def process_apple_purchase(self, receipt_data: str, user_id: str) -> None:
+    async def process_apple_purchase(self, receipt_data: str, user_id: str) -> str:
         response = await self._validate_apple_receipt(receipt_data=receipt_data)
 
         latest_receipt_info = self._extract_latest_receipt_info(response)
@@ -47,19 +47,6 @@ class PurchaseService:
         if subscription is None:
             raise DoesNotExist("Subscription not found")
 
-        await self._create_purchase_history(
-            user_id=user_id,
-            subscription=subscription,
-            product_code=receipt_info.product_code,
-            transaction_id=receipt_info.transaction_id,
-            original_transaction_id=receipt_info.original_transaction_id,
-            status=purchase_status,
-            expires_date_ms=receipt_info.expires_date_ms,
-            purchase_date_ms=receipt_info.purchase_date_ms,
-            quantity=receipt_info.quantity,
-            receipt_data=receipt_data,
-        )
-
         item_inventory_products = await self._validate_purchase(product_code=receipt_info.product_code)
 
         await self._process_purchase(
@@ -67,6 +54,10 @@ class PurchaseService:
             item_inventory_products=item_inventory_products,
             status=purchase_status,
         )
+
+        user = await UserService.get_user_profile(user_id=user_id)
+
+        return PurchaseResponseDTO.build(is_premium=user.is_premium, product_code=receipt_info.product_code)
 
     @staticmethod
     def _extract_latest_receipt_info(response: dict[str, Any]) -> dict[str, Any] | None:

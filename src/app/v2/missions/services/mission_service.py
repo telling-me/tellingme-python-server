@@ -73,7 +73,7 @@ class MissionService:
 
         if total_cheese == 0 and total_exp == 0:
             return
-        print(total_exp, total_cheese)
+
         await NoticeService.create_reward_notice(
             user_id=user_id, reward_type="DAILY_MISSION", total_cheese=total_cheese, total_exp=total_exp
         )

@@ -2,6 +2,7 @@ from typing import Any
 
 from fastapi import APIRouter, Depends, status
 
+from app.v2.purchases.dtos.purchase_dto import PurchaseResponseDTO
 from app.v2.purchases.dtos.requests import ReceiptRequestDTO
 from app.v2.purchases.services.purchase_service import PurchaseService
 
@@ -11,20 +12,15 @@ router = APIRouter(prefix="/purchase", tags=["Purchase"])
 @router.post(
     "/apple",
     status_code=status.HTTP_200_OK,
-    response_model=dict[str, Any],
+    response_model=PurchaseResponseDTO,
     summary="apple 결제 api",
     description="apple 결제 api",
 )
 async def process_receipt(
     receipt: ReceiptRequestDTO,
     purchase_service: PurchaseService = Depends(),
-) -> dict[str, Any]:
-    await purchase_service.process_apple_purchase(receipt_data=receipt.receiptData, user_id=receipt.user_id)
-    return {
-        "code": status.HTTP_200_OK,
-        "message": "Receipt verified successfully",
-        "data": True,
-    }
+) -> PurchaseResponseDTO:
+    return await purchase_service.process_apple_purchase(receipt_data=receipt.receiptData, user_id=receipt.user_id)
 
 
 @router.post("/receipt-test")
