@@ -12,6 +12,7 @@ class ReceiptInfoDTO(BaseModel):
     expires_date_ms: int
     purchase_date_ms: int
     product_code: str
+    product_code_two: str
     quantity: int
     cancellation_date_ms: Optional[int] = None
 
@@ -22,6 +23,7 @@ class ReceiptInfoDTO(BaseModel):
         expires_date_ms = int(latest_receipt_info.get("expires_date_ms", 0))
         purchase_date_ms = int(latest_receipt_info.get("purchase_date_ms", 0))
         product_code = purchase_mapping.get(latest_receipt_info["product_id"], latest_receipt_info["product_id"])
+        product_code_two = latest_receipt_info["product_id"]
         quantity = int(latest_receipt_info.get("quantity", 1))
         cancellation_date_ms = latest_receipt_info.get("cancellation_date_ms")  # 환불일 (밀리초)
 
@@ -31,6 +33,7 @@ class ReceiptInfoDTO(BaseModel):
             expires_date_ms=expires_date_ms,
             purchase_date_ms=purchase_date_ms,
             product_code=product_code,
+            product_code_two=product_code_two,
             quantity=quantity,
             cancellation_date_ms=cancellation_date_ms,
         )

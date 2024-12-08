@@ -57,7 +57,7 @@ class PurchaseService:
 
         user = await UserService.get_user_profile(user_id=user_id)
 
-        return PurchaseResponseDTO.build(is_premium=user.is_premium, product_code=receipt_info.product_code)
+        return PurchaseResponseDTO.build(is_premium=user.is_premium, product_code=receipt_info.product_code_two)
 
     @staticmethod
     def _extract_latest_receipt_info(response: dict[str, Any]) -> dict[str, Any] | None:
