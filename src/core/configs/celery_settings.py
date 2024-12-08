@@ -6,7 +6,6 @@ from tortoise import Tortoise
 
 from app.v2.missions.services.mission_service import MissionService
 from common.tasks.mission_task import mission_reset_task
-from common.tasks.renew_subscription_task import expire_subscription_task, renew_subscription_task
 from core.database.database_settings import TORTOISE_ORM
 
 celery_app = Celery(
@@ -39,8 +38,6 @@ async def execute_async_daily_task() -> None:
     await initialize_celery()
     try:
         await mission_reset_task()
-        await renew_subscription_task()
-        await expire_subscription_task()
     finally:
         await close_celery_connections()
 
