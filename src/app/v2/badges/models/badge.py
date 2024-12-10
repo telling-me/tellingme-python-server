@@ -55,3 +55,7 @@ class BadgeInventory(Model):
 
     class Meta:
         table = "badge_inventory"
+
+    @property
+    def badge_full_name(self) -> str:
+        return f"{self.badge_middle_name} {self.badge_name}"

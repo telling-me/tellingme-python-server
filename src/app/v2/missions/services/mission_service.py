@@ -51,32 +51,21 @@ class MissionService:
         cheese_manager_id: int = user["cheese_manager_id"]
         mission_dict = {mission.mission_code: mission for mission in missions}
 
-        special_mission_codes = ["MS_LV_UP"]
+        badge_missions, lv_up_mission, daily_missions = await self._classify_missions(user_missions)
 
-        regular_missions = [mission for mission in user_missions if mission.mission_code not in special_mission_codes]
-        special_missions = {
-            mission.mission_code: mission for mission in user_missions if mission.mission_code in special_mission_codes
-        }
-
-        results = await asyncio.gather(
-            *[self._process_mission(mission, mission_dict, cheese_manager_id, user_id) for mission in regular_missions]
+        await asyncio.gather(
+            *[self._process_mission(mission, mission_dict, cheese_manager_id, user_id) for mission in badge_missions],
+            *[self._process_mission(mission, mission_dict, cheese_manager_id, user_id) for mission in daily_missions],
         )
 
-        total_cheese, total_exp = map(sum, zip(*results))
+        if lv_up_mission[0]:
+            await self._process_mission(lv_up_mission[0], mission_dict, cheese_manager_id, user_id)
 
-        if "MS_LV_UP" in special_missions:
-            cheese, exp = await self._process_mission(
-                special_missions["MS_LV_UP"], mission_dict, cheese_manager_id, user_id
-            )
-            total_cheese += cheese
-            total_exp += exp
-
-        if total_cheese == 0 and total_exp == 0:
-            return
-
-        await NoticeService.create_reward_notice(
-            user_id=user_id, reward_type="DAILY_MISSION", total_cheese=total_cheese, total_exp=total_exp
-        )
+    async def _classify_missions(self, user_missions):
+        badge_missions = [mission for mission in user_missions if mission.mission_code.startswith("MS_BADGE")]
+        lv_up_mission = [mission for mission in user_missions if mission.mission_code == "MS_LV_UP"]
+        daily_missions = [mission for mission in user_missions if mission.mission_code.startswith("MS_DAILY")]
+        return badge_missions, lv_up_mission, daily_missions
 
     async def _process_mission(
         self,
@@ -84,7 +73,7 @@ class MissionService:
         mission_dict: dict[str, MissionInventory],
         cheese_manager_id: int,
         user_id: str,
-    ) -> tuple[int, int]:
+    ) -> None:
         mission = mission_dict.get(user_mission.mission_code)
 
         if user_mission.is_completed or not mission:
@@ -102,21 +91,16 @@ class MissionService:
                 is_completed=user_mission.is_completed,
             )
             if user_mission.mission_code == "MS_DAILY_POST_GENERAL":
-                return 0, await self.reward_daily_post(
-                    user_id=user_id,
-                )
+                await self.reward_daily_post(user_id=user_id, cheese_manager_id=cheese_manager_id)
             else:
                 return await self.reward_user_for_mission(
                     user_id=user_id,
                     reward_code=mission.reward_code,
                     cheese_manager_id=cheese_manager_id,
                 )
-        return 0, 0
 
     async def evaluate_mission_condition(self, user_id: str, mission_code: str) -> int:
         if mission_code == "MS_BADGE_POST_FIRST" and await self.check_first_post(user_id):
-            return 1
-        elif mission_code == "MS_SINGLE_POST_2_5" and await self.check_post_count_range(user_id, 2, 5):
             return 1
         elif mission_code == "MS_BADGE_POST_280_CHAR" and await self.check_long_answer(user_id):
             return 1
@@ -138,25 +122,19 @@ class MissionService:
 
     @staticmethod
     async def check_first_post(user_id: str) -> bool:
-        post_count_raw = await Answer.get_answer_count_by_user_id(user_id=user_id)
-        post_count: int = post_count_raw.get("answer_count", 0)
-        return post_count > 0
+        return await AnswerService.get_answer_count(user_id=user_id) > 0
 
     @staticmethod
-    async def check_post_count_range(user_id: str, min_count: int, max_count: int) -> bool:
-        post_count_raw = await Answer.get_answer_count_by_user_id(user_id=user_id)
-        post_count: int = post_count_raw.get("answer_count", 0)
-        return min_count <= post_count <= max_count
+    async def get_answer_count(user_id: str) -> int:
+        return await AnswerService.get_answer_count(user_id=user_id)
 
     @staticmethod
-    async def check_post_count_min(user_id: str, min_count: int) -> bool:
-        post_count_raw = await Answer.get_answer_count_by_user_id(user_id=user_id)
-        post_count: int = post_count_raw.get("answer_count", 0)
-        return post_count >= min_count
+    async def check_post_count_range(answer_count: int, min_count: int, max_count: int) -> bool:
+        return min_count <= answer_count <= max_count
 
     @staticmethod
     async def check_long_answer(user_id: str) -> bool:
-        recent_answer = await Answer.get_most_recent_answer_by_user_id(user_id=user_id)
+        recent_answer = await AnswerService.get_most_recent_answer(user_id=user_id)
         return len(recent_answer["content"]) >= 280 if recent_answer else False
 
     @staticmethod
@@ -166,7 +144,7 @@ class MissionService:
 
     @staticmethod
     async def check_early_morning_posts(user_id: str) -> bool:
-        recent_answer = await Answer.get_most_recent_answer_by_user_id(user_id=user_id)
+        recent_answer = await AnswerService.get_most_recent_answer(user_id=user_id)
         if recent_answer:
             answer_time = recent_answer.get("created_time")
             return 0 <= answer_time.hour <= 5 if isinstance(answer_time, datetime) else False
@@ -197,10 +175,7 @@ class MissionService:
 
     @staticmethod
     async def check_daily_post(user_id: str) -> bool:
-        answer = await Answer.get_most_recent_answer_by_user_id(user_id=user_id)
-
-        if answer == 0:
-            return False
+        answer = await AnswerService.get_most_recent_answer(user_id=user_id)
 
         answer_date = answer.get("date")
 
@@ -234,14 +209,15 @@ class MissionService:
         except DoesNotExist:
             raise HTTPException(status_code=404, detail="Reward not found.")
 
-    @staticmethod
     async def process_reward(
+        self,
         item_inventory_rewards: list[ItemInventoryRewardInventory],
         user_id: str,
         cheese_manager_id: int,
-    ) -> tuple[int, int]:
+    ) -> None:
         total_cheese = 0
         total_exp = 0
+        badge_info = []
 
         for item_inventory_reward in item_inventory_rewards:
             item: ItemInventory = await item_inventory_reward.item_inventory
@@ -250,6 +226,9 @@ class MissionService:
             if item.item_category == "BADGE":
                 for _ in range(quantity):
                     await BadgeService.add_badge(user_id=user_id, badge_code=item.item_code)
+                    badge = await BadgeService.get_badge_info_by_badge_code(badge_code=item.item_code)
+                    badge_info.append(badge.badge_full_name)
+
             elif item.item_category == "COLOR":
                 for _ in range(quantity):
                     await ColorService.add_color(user_id=user_id, color_code=item.item_code)
@@ -262,10 +241,103 @@ class MissionService:
             else:
                 raise ValueError(f"Invalid item category for reward: {item.item_category}")
 
-        return total_cheese, total_exp
+        if badge_info:
+            await self._create_reward_notice(
+                user_id=user_id,
+                reward_type="BADGE_MISSION",
+                total_exp=total_exp,
+                total_cheese=total_cheese,
+                badge_info=badge_info[0],
+            )
+            return
+
+        if total_cheese > 0 or total_exp > 0:
+            await self._create_reward_notice(
+                user_id=user_id,
+                reward_type="DAILY_MISSION",
+                total_exp=total_exp,
+                total_cheese=total_cheese,
+                badge_info=None,
+            )
+
+    async def reward_daily_post(self, user_id: str, cheese_manager_id: int) -> None:
+        # 1. 경험치 및 치즈 계산
+        exp, cheese, consecutive_date = await self._calculate_exp_and_cheese(user_id)
+
+        # 2. 경험치와 치즈 추가
+        await self._add_exp_and_cheese(user_id, cheese_manager_id, exp, cheese)
+
+        # 3. 보상 알림 생성
+        await self._create_reward_notice(
+            user_id=user_id,
+            reward_type="DAILY_MISSION",
+            total_exp=exp,
+            total_cheese=cheese,
+            badge_info=None,
+        )
+
+    async def _calculate_exp_and_cheese(self, user_id: str) -> tuple[int, int, int]:
+        # 1. 연속 답변 포인트 계산
+        consecutive_date = await AnswerService.calculate_consecutive_answer_points(user_id=user_id)
+
+        # 2. 경험치 계산
+        exp = await self._calculate_exp(user_id, consecutive_date)
+
+        # 3. 치즈 계산
+        cheese = await self._calculate_cheese(consecutive_date)
+
+        return exp, cheese, consecutive_date
+
+    async def _calculate_exp(self, user_id: str, consecutive_date: int) -> int:
+        exp = 0
+
+        answer_count = await self.get_answer_count(user_id=user_id)
+
+        if answer_count == 1:
+            exp += 10
+        elif await self.check_post_count_range(answer_count, 2, 5):
+            exp += 5
+
+        exp += consecutive_date
+
+        return exp
 
     @staticmethod
-    async def reward_daily_post(user_id: str) -> int:
-        exp = await AnswerService.calculate_consecutive_answer_points(user_id=user_id)
+    async def _calculate_cheese(consecutive_date: int) -> int:
+        cheese = 0
+
+        if consecutive_date == 0:
+            cheese = 0
+        elif 2 <= consecutive_date <= 5:
+            cheese = 1
+        elif 5 <= consecutive_date <= 8:
+            cheese = 2
+        elif consecutive_date >= 9:
+            cheese = 3
+
+        return cheese
+
+    @staticmethod
+    async def _add_exp_and_cheese(user_id: str, cheese_manager_id: int, exp: int, cheese: int) -> None:
+        # 경험치 추가
         await LevelService.add_exp(user_id=user_id, exp=exp)
-        return exp
+
+        # 치즈 추가
+        await CheeseService.add_cheese(cheese_manager_id=cheese_manager_id, amount=cheese)
+
+    @staticmethod
+    async def _create_reward_notice(
+        user_id: str, reward_type: str, total_exp: int, total_cheese: int, badge_info: str
+    ) -> None:
+        await NoticeService.create_reward_notice(
+            user_id=user_id,
+            reward_type=reward_type,
+            total_cheese=total_cheese,
+            total_exp=total_exp,
+            badge_info=badge_info,
+        )
+
+    async def _create_level_up_reward_notice(self, user_id: str, total_exp: int, total_cheese: int) -> None:
+        await NoticeService.create_reward_notice(
+            user_id=user_id, reward_type="LEVEL_UP", total_cheese=total_cheese, total_exp=total_exp
+        )

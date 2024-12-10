@@ -1,5 +1,5 @@
 from app.v2.badges.dtos.badge_dto import BadgeCodeDTO, BadgeDTO
-from app.v2.badges.models.badge import Badge
+from app.v2.badges.models.badge import Badge, BadgeInventory
 
 
 class BadgeService:
@@ -23,3 +23,7 @@ class BadgeService:
         if badge_count_raw is None:
             return 0
         return int(badge_count_raw.get("badge_count", 0))
+
+    @classmethod
+    async def get_badge_info_by_badge_code(cls, badge_code: str) -> BadgeInventory:
+        return await BadgeInventory.get(badge_code=badge_code)

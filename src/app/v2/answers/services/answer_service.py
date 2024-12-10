@@ -36,3 +36,10 @@ class AnswerService:
     @classmethod
     async def calculate_consecutive_answer_points(cls, user_id: str) -> int:
         return min(await cls.get_answer_record(user_id=user_id), 10)
+
+    @classmethod
+    async def get_most_recent_answer(cls, user_id: str):
+        answer = await Answer.get_most_recent_answer_by_user_id(user_id=user_id)
+        if answer == 0:
+            return {}
+        return answer
