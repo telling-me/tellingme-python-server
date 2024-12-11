@@ -240,7 +240,7 @@ class MissionService:
                 for _ in range(quantity):
                     await BadgeService.add_badge(user_id=user_id, badge_code=item.item_code)
                     badge = await BadgeService.get_badge_info_by_badge_code(badge_code=item.item_code)
-                    badge_info.append(badge.badge_full_name)
+                    badge_info.append(badge)
 
             elif item.item_category == "COLOR":
                 for _ in range(quantity):
@@ -254,9 +254,12 @@ class MissionService:
             else:
                 raise ValueError(f"Invalid item category for reward: {item.item_category}")
 
-        badge_full_name = badge_info[0] if badge_info else None
+        badge_full_name = badge_info[0].badge_full_name if badge_info else None
+        badge_code = badge_info[0].badge_code if badge_info else None
 
-        return await RewardDTO.build(total_cheese=total_cheese, total_exp=total_exp, badge=badge_full_name)
+        return await RewardDTO.build(
+            total_cheese=total_cheese, total_exp=total_exp, badge_full_name=badge_full_name, badge_code=badge_code
+        )
 
     async def reward_daily_post(self, user_id: str, cheese_manager_id: int) -> None:
         # 1. 경험치 및 치즈 계산
@@ -271,7 +274,6 @@ class MissionService:
             reward_type="DAILY_MISSION",
             total_exp=exp,
             total_cheese=cheese,
-            badge_info=None,
         )
 
     async def _calculate_exp_and_cheese(self, user_id: str) -> tuple[int, int, int]:
@@ -329,7 +331,8 @@ class MissionService:
         reward_type: str,
         total_exp: int,
         total_cheese: int,
-        badge_info: Optional[str],
+        badge_full_name: Optional[str] = None,
+        badge_code: Optional[str] = None,
         level_up: Optional[bool] = False,
         nickname: Optional[str] = None,
         new_level: Optional[int] = None,
@@ -339,7 +342,8 @@ class MissionService:
             reward_type=reward_type,
             total_cheese=total_cheese,
             total_exp=total_exp,
-            badge_info=badge_info,
+            badge_full_name=badge_full_name,
+            badge_code=badge_code,
             level_up=level_up,
             nickname=nickname,
             new_level=new_level,
@@ -363,7 +367,6 @@ class MissionService:
             reward_type="LEVEL_UP",
             total_exp=reward_dto.total_exp,
             total_cheese=reward_dto.total_cheese,
-            badge_info=None,
             level_up=True,
             nickname=nickname,
             new_level=level,
@@ -381,7 +384,8 @@ class MissionService:
             reward_type="BADGE_MISSION",
             total_exp=reward_dto.total_exp,
             total_cheese=reward_dto.total_cheese,
-            badge_info=reward_dto.badge,
+            badge_code=reward_dto.badge_code,
+            badge_full_name=reward_dto.badge_full_name,
         )
 
     async def reward_mission(self, user_id: str, cheese_manager_id: int, reward_code: str) -> None:
@@ -396,5 +400,4 @@ class MissionService:
             reward_type="DAILY_MISSION",
             total_exp=reward_dto.total_exp,
             total_cheese=reward_dto.total_cheese,
-            badge_info=None,
         )

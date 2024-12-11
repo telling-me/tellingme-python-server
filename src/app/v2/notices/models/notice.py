@@ -39,16 +39,17 @@ class Notice(Model):
         answer_id: Optional[int] = None,
         date: Optional[str] = None,
         reward_type: Optional[str] = None,
+        badge_code: Optional[str] = None,
     ) -> None:
         query = """
                     INSERT INTO notice (
                         title, content, user_id, link, is_internal, is_read, answer_id, date, reward_type,
-                        created_at
+                        badge_code, created_at
                     )
                     VALUES (
-                        %s, %s, UNHEX(REPLACE(%s, '-', '')), %s, %s, %s, %s, %s, %s, NOW()
+                        %s, %s, UNHEX(REPLACE(%s, '-', '')), %s, %s, %s, %s, %s, %s, %s, NOW()
                     );
                 """
-        values = (title, content, user_id, link, is_internal, is_read, answer_id, date, reward_type)
+        values = (title, content, user_id, link, is_internal, is_read, answer_id, date, reward_type, badge_code)
 
         await QueryExecutor.execute_query(query, values=values, fetch_type="single")
