@@ -30,7 +30,7 @@ async def mobile_main_handler() -> None:
 async def mobile_teller_card_handler(user_id: str) -> TellerCardResponseDTO:
 
     badges_task = BadgeService.get_badges_with_details_by_user_id(user_id)
-    colors_task = ColorService.get_colors(user_id)
+    colors_task = ColorService.get_colors_with_details_by_user_id(user_id)
     level_info_task = LevelService.get_level_info_add_answer_days(user_id)
     teller_card_task = TellerCardService.get_teller_card(user_id)
     user_info_task = UserService.get_user_info(user_id)
