@@ -80,7 +80,7 @@ async def mobile_my_page_handler(user_id: str) -> MyPageResponseDTO:
             badgeCount=badge_count,
             answerCount=answer_count,
             premium=user.is_premium,  # type: ignore
-            allow_notification=user.allow_notification,
+            allow_notification=user.allow_notification,  # type: ignore
         ),
         level=level,
     )

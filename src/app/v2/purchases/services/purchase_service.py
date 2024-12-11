@@ -9,7 +9,7 @@ from tortoise.exceptions import DoesNotExist
 from tortoise.transactions import atomic
 
 from app.v2.items.models.item import ItemInventory, ItemInventoryProductInventory, ProductInventory
-from app.v2.purchases.dtos.purchase_dto import ReceiptInfoDTO, PurchaseResponseDTO
+from app.v2.purchases.dtos.purchase_dto import PurchaseResponseDTO, ReceiptInfoDTO
 from app.v2.purchases.models.purchase_history import PurchaseHistory, Subscription
 from app.v2.purchases.models.purchase_status import PurchaseStatus, SubscriptionStatus
 from app.v2.users.models.user import User
@@ -56,7 +56,7 @@ class PurchaseService:
 
         user = await UserService.get_user_profile(user_id=user_id)
 
-        return PurchaseResponseDTO.build(is_premium=user.is_premium, product_code=receipt_info.product_code_two)
+        return PurchaseResponseDTO.build(is_premium=user.is_premium, product_code=receipt_info.product_code_two)  # type: ignore
 
     @staticmethod
     def _extract_latest_receipt_info(response: dict[str, Any]) -> dict[str, Any] | None:

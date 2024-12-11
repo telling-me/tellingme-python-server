@@ -1,5 +1,6 @@
 import asyncio
-from datetime import datetime, timedelta, timezone, date
+from datetime import date, datetime, timedelta, timezone
+from typing import Any, Optional
 
 from fastapi import HTTPException
 from tortoise.exceptions import DoesNotExist
@@ -14,6 +15,7 @@ from app.v2.items.models.item import ItemInventory, ItemInventoryRewardInventory
 from app.v2.levels.services.level_service import LevelService
 from app.v2.likes.models.like import Like
 from app.v2.missions.dtos.mission_dto import UserMissionDTO
+from app.v2.missions.dtos.reward_dto import RewardDTO
 from app.v2.missions.models.mission import MissionInventory, UserMission
 from app.v2.notices.services.notice_service import NoticeService
 from app.v2.users.services.user_service import UserService
@@ -61,7 +63,9 @@ class MissionService:
         if lv_up_mission[0]:
             await self._process_mission(lv_up_mission[0], mission_dict, cheese_manager_id, user_id)
 
-    async def _classify_missions(self, user_missions):
+    async def _classify_missions(
+        self, user_missions: list[UserMissionDTO]
+    ) -> tuple[list[UserMissionDTO], list[UserMissionDTO], list[UserMissionDTO]]:
         badge_missions = [mission for mission in user_missions if mission.mission_code.startswith("MS_BADGE")]
         lv_up_mission = [mission for mission in user_missions if mission.mission_code == "MS_LV_UP"]
         daily_missions = [mission for mission in user_missions if mission.mission_code.startswith("MS_DAILY")]
@@ -77,7 +81,7 @@ class MissionService:
         mission = mission_dict.get(user_mission.mission_code)
 
         if user_mission.is_completed or not mission:
-            return 0, 0
+            return
 
         increment = await self.evaluate_mission_condition(user_id, user_mission.mission_code)
         user_mission.progress_count += increment
@@ -90,14 +94,36 @@ class MissionService:
                 new_progress_count=user_mission.progress_count,
                 is_completed=user_mission.is_completed,
             )
-            if user_mission.mission_code == "MS_DAILY_POST_GENERAL":
-                await self.reward_daily_post(user_id=user_id, cheese_manager_id=cheese_manager_id)
-            else:
-                return await self.reward_user_for_mission(
-                    user_id=user_id,
-                    reward_code=mission.reward_code,
-                    cheese_manager_id=cheese_manager_id,
-                )
+            await self._handle_mission_reward(
+                user_id=user_id,
+                mission_code=user_mission.mission_code,
+                reward_code=mission.reward_code,
+                cheese_manager_id=cheese_manager_id,
+            )
+
+    async def _handle_mission_reward(
+        self,
+        user_id: str,
+        mission_code: str,
+        reward_code: str,
+        cheese_manager_id: int,
+    ) -> None:
+        if mission_code == "MS_DAILY_POST_GENERAL":
+            await self.reward_daily_post(user_id=user_id, cheese_manager_id=cheese_manager_id)
+        elif mission_code == "MS_LV_UP":
+            await self.reward_level_up_mission(
+                user_id=user_id, cheese_manager_id=cheese_manager_id, reward_code=reward_code
+            )
+        elif mission_code.startswith("MS_BADGE"):
+            await self.reward_badge_mission(
+                user_id=user_id, cheese_manager_id=cheese_manager_id, reward_code=reward_code
+            )
+        else:
+            await self.reward_mission(
+                user_id=user_id,
+                cheese_manager_id=cheese_manager_id,
+                reward_code=reward_code,
+            )
 
     async def evaluate_mission_condition(self, user_id: str, mission_code: str) -> int:
         if mission_code == "MS_BADGE_POST_FIRST" and await self.check_first_post(user_id):
@@ -179,20 +205,7 @@ class MissionService:
 
         answer_date = answer.get("date")
 
-        return answer_date == date.today()
-
-    async def reward_user_for_mission(
-        self,
-        user_id: str,
-        reward_code: str,
-        cheese_manager_id: int,
-    ) -> tuple[int, int]:
-        item_inventory_rewards = await self.validate_reward(reward_code=reward_code)
-        return await self.process_reward(
-            item_inventory_rewards=item_inventory_rewards,
-            user_id=user_id,
-            cheese_manager_id=cheese_manager_id,
-        )
+        return answer_date == date.today()  # type: ignore
 
     @staticmethod
     async def validate_reward(reward_code: str):  # type: ignore
@@ -214,7 +227,7 @@ class MissionService:
         item_inventory_rewards: list[ItemInventoryRewardInventory],
         user_id: str,
         cheese_manager_id: int,
-    ) -> None:
+    ) -> RewardDTO:
         total_cheese = 0
         total_exp = 0
         badge_info = []
@@ -241,24 +254,9 @@ class MissionService:
             else:
                 raise ValueError(f"Invalid item category for reward: {item.item_category}")
 
-        if badge_info:
-            await self._create_reward_notice(
-                user_id=user_id,
-                reward_type="BADGE_MISSION",
-                total_exp=total_exp,
-                total_cheese=total_cheese,
-                badge_info=badge_info[0],
-            )
-            return
+        badge_full_name = badge_info[0] if badge_info else None
 
-        if total_cheese > 0 or total_exp > 0:
-            await self._create_reward_notice(
-                user_id=user_id,
-                reward_type="DAILY_MISSION",
-                total_exp=total_exp,
-                total_cheese=total_cheese,
-                badge_info=None,
-            )
+        return await RewardDTO.build(total_cheese=total_cheese, total_exp=total_exp, badge=badge_full_name)
 
     async def reward_daily_post(self, user_id: str, cheese_manager_id: int) -> None:
         # 1. 경험치 및 치즈 계산
@@ -327,7 +325,14 @@ class MissionService:
 
     @staticmethod
     async def _create_reward_notice(
-        user_id: str, reward_type: str, total_exp: int, total_cheese: int, badge_info: str
+        user_id: str,
+        reward_type: str,
+        total_exp: int,
+        total_cheese: int,
+        badge_info: Optional[str],
+        level_up: Optional[bool] = False,
+        nickname: Optional[str] = None,
+        new_level: Optional[int] = None,
     ) -> None:
         await NoticeService.create_reward_notice(
             user_id=user_id,
@@ -335,9 +340,61 @@ class MissionService:
             total_cheese=total_cheese,
             total_exp=total_exp,
             badge_info=badge_info,
+            level_up=level_up,
+            nickname=nickname,
+            new_level=new_level,
         )
 
-    async def _create_level_up_reward_notice(self, user_id: str, total_exp: int, total_cheese: int) -> None:
-        await NoticeService.create_reward_notice(
-            user_id=user_id, reward_type="LEVEL_UP", total_cheese=total_cheese, total_exp=total_exp
+    async def reward_level_up_mission(self, user_id: str, cheese_manager_id: int, reward_code: str) -> None:
+        item_inventory_rewards = await self.validate_reward(reward_code=reward_code)
+        reward_dto = await self.process_reward(
+            item_inventory_rewards=item_inventory_rewards,
+            user_id=user_id,
+            cheese_manager_id=cheese_manager_id,
+        )
+        level_info = await LevelService.get_level_info_add_answer_days(user_id)
+        user_info = await UserService.get_user_profile(user_id=user_id)
+
+        nickname = user_info.nickname
+        level = level_info.levelDto.level
+
+        await self._create_reward_notice(
+            user_id=user_id,
+            reward_type="LEVEL_UP",
+            total_exp=reward_dto.total_exp,
+            total_cheese=reward_dto.total_cheese,
+            badge_info=None,
+            level_up=True,
+            nickname=nickname,
+            new_level=level,
+        )
+
+    async def reward_badge_mission(self, user_id: str, cheese_manager_id: int, reward_code: str) -> None:
+        item_inventory_rewards = await self.validate_reward(reward_code=reward_code)
+        reward_dto = await self.process_reward(
+            item_inventory_rewards=item_inventory_rewards,
+            user_id=user_id,
+            cheese_manager_id=cheese_manager_id,
+        )
+        await self._create_reward_notice(
+            user_id=user_id,
+            reward_type="BADGE_MISSION",
+            total_exp=reward_dto.total_exp,
+            total_cheese=reward_dto.total_cheese,
+            badge_info=reward_dto.badge,
+        )
+
+    async def reward_mission(self, user_id: str, cheese_manager_id: int, reward_code: str) -> None:
+        item_inventory_rewards = await self.validate_reward(reward_code=reward_code)
+        reward_dto = await self.process_reward(
+            item_inventory_rewards=item_inventory_rewards,
+            user_id=user_id,
+            cheese_manager_id=cheese_manager_id,
+        )
+        await self._create_reward_notice(
+            user_id=user_id,
+            reward_type="DAILY_MISSION",
+            total_exp=reward_dto.total_exp,
+            total_cheese=reward_dto.total_cheese,
+            badge_info=None,
         )

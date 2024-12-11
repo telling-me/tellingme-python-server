@@ -1,3 +1,5 @@
+from typing import Optional
+
 from tortoise import fields
 from tortoise.fields import ForeignKeyRelation
 from tortoise.models import Model
@@ -19,7 +21,7 @@ class Notice(Model):
     reward_type = fields.CharField(max_length=255, null=True)
 
     user: ForeignKeyRelation[User] = fields.ForeignKeyField(
-        "models.User", related_name="notices", null=True, on_delete=fields.SET_NULL
+        "models.User", related_name="notices", on_delete=fields.CASCADE
     )
 
     class Meta:
@@ -30,13 +32,13 @@ class Notice(Model):
         cls,
         title: str,
         content: str,
-        user_id: int,
-        link: str = None,
-        is_read: bool = False,
-        is_internal: bool = False,
-        answer_id: int = None,
-        date: str = None,
-        reward_type: str = None,
+        user_id: str,
+        link: Optional[str] = None,
+        is_read: Optional[bool] = False,
+        is_internal: Optional[bool] = False,
+        answer_id: Optional[int] = None,
+        date: Optional[str] = None,
+        reward_type: Optional[str] = None,
     ) -> None:
         query = """
                     INSERT INTO notice (

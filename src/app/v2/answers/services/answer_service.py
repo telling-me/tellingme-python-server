@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from typing import Any
 
 from app.v2.answers.models.answer import Answer
 
@@ -38,7 +39,7 @@ class AnswerService:
         return min(await cls.get_answer_record(user_id=user_id), 10)
 
     @classmethod
-    async def get_most_recent_answer(cls, user_id: str):
+    async def get_most_recent_answer(cls, user_id: str) -> Any:
         answer = await Answer.get_most_recent_answer_by_user_id(user_id=user_id)
         if answer == 0:
             return {}
