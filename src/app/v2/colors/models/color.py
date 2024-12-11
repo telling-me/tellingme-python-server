@@ -49,3 +49,7 @@ class ColorInventory(Model):
 
     class Meta:
         table = "color_inventory"  # 테이블 이름을 명시
+
+    @classmethod
+    async def get_color_inventory(cls) -> list[dict[str, str]]:
+        return await cls.all().values("color_code", "color_name", "color_hex_code")
