@@ -18,7 +18,7 @@ class LevelService:
         level_dto = await cls.get_level_info(user_id=user_id)
 
         if level_dto.requiredExp is None:
-            raise ValueError("Required experience cannot be None")  # 예외를 던지는 방법
+            raise ValueError("Required experience cannot be None")
 
         needs_to_level_up = await cls.calculate_days_to_level_up(
             user_id=user_id,
