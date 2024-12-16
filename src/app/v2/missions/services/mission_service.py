@@ -1,12 +1,11 @@
 import asyncio
 from datetime import date, datetime, timedelta, timezone
-from typing import Any, Optional
+from typing import Optional
 
 from fastapi import HTTPException
 from tortoise.exceptions import DoesNotExist
 from tortoise.transactions import atomic
 
-from app.v2.answers.models.answer import Answer
 from app.v2.answers.services.answer_service import AnswerService
 from app.v2.badges.services.badge_service import BadgeService
 from app.v2.cheese_managers.services.cheese_service import CheeseService
@@ -148,11 +147,11 @@ class MissionService:
 
     @staticmethod
     async def check_first_post(user_id: str) -> bool:
-        return await AnswerService.get_answer_count(user_id=user_id) > 0
+        return await AnswerService.get_answer_count_v2(user_id=user_id) > 0
 
     @staticmethod
     async def get_answer_count(user_id: str) -> int:
-        return await AnswerService.get_answer_count(user_id=user_id)
+        return await AnswerService.get_answer_count_v2(user_id=user_id)
 
     @staticmethod
     async def check_post_count_range(answer_count: int, min_count: int, max_count: int) -> bool:

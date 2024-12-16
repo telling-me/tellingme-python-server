@@ -9,6 +9,7 @@ from app.v2.answers.querys.answer_query import (
     SELECT_ANSWER_BY_USER_UUID_QUERY,
     SELECT_ANSWER_COUNT_BY_USER_UUID_QUERY,
     SELECT_MOST_RECENT_ANSWER_BY_USER_UUID_QUERY,
+    SELECT_ANSWER_COUNT_BY_USER_UUID_QUERY_V2,
 )
 from app.v2.users.models.user import User
 from common.utils.query_executor import QueryExecutor
@@ -42,6 +43,12 @@ class Answer(Model):
     @classmethod
     async def get_answer_count_by_user_id(cls, user_id: str) -> Any:
         query = SELECT_ANSWER_COUNT_BY_USER_UUID_QUERY
+        value = user_id
+        return await QueryExecutor.execute_query(query, values=value, fetch_type="single")
+
+    @classmethod
+    async def get_answer_count_by_user_id_v2(cls, user_id: str) -> Any:
+        query = SELECT_ANSWER_COUNT_BY_USER_UUID_QUERY_V2
         value = user_id
         return await QueryExecutor.execute_query(query, values=value, fetch_type="single")
 
