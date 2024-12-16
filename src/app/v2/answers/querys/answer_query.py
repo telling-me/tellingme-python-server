@@ -13,6 +13,6 @@ SELECT_MOST_RECENT_ANSWER_BY_USER_UUID_QUERY = f"""
     SELECT *
     FROM answer
     WHERE {USER_ID_QUERY}
-    ORDER BY created_at DESC
+    ORDER BY created_time DESC
     LIMIT 1
 """
