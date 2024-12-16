@@ -7,7 +7,20 @@ from app.v2.answers.models.answer import Answer
 class AnswerService:
     @classmethod
     async def get_answer_count(cls, user_id: str) -> int:
+        """
+        과거부터 현재까지 총 답변 수
+        """
         answer_count_raw = await Answer.get_answer_count_by_user_id(user_id=user_id)
+        if answer_count_raw is None:
+            return 0
+        return int(answer_count_raw.get("answer_count", 0))
+
+    @classmethod
+    async def get_answer_count_v2(cls, user_id: str) -> int:
+        """
+        v2 이후 총 답변 수
+        """
+        answer_count_raw = await Answer.get_answer_count_by_user_id_v2(user_id=user_id)
         if answer_count_raw is None:
             return 0
         return int(answer_count_raw.get("answer_count", 0))

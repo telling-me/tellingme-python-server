@@ -63,7 +63,7 @@ class LevelService:
         remaining_exp = required_exp - current_exp
         days_needed = 0
 
-        answer_count = await AnswerService.get_answer_count(user_id=user_id)
+        answer_count = await AnswerService.get_answer_count_v2(user_id=user_id) + 1
         bonus_points = await AnswerService.calculate_consecutive_answer_points(user_id=user_id)
 
         while remaining_exp > 0:
