@@ -8,8 +8,8 @@ from tortoise.models import Model
 from app.v2.answers.querys.answer_query import (
     SELECT_ANSWER_BY_USER_UUID_QUERY,
     SELECT_ANSWER_COUNT_BY_USER_UUID_QUERY,
-    SELECT_MOST_RECENT_ANSWER_BY_USER_UUID_QUERY,
     SELECT_ANSWER_COUNT_BY_USER_UUID_QUERY_V2,
+    SELECT_MOST_RECENT_ANSWER_BY_USER_UUID_QUERY,
 )
 from app.v2.users.models.user import User
 from common.utils.query_executor import QueryExecutor
