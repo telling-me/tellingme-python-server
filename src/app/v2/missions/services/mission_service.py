@@ -2,6 +2,7 @@ import asyncio
 from datetime import date, datetime, timedelta, timezone
 from typing import Optional
 
+import pytz
 from fastapi import HTTPException
 from tortoise.exceptions import DoesNotExist
 from tortoise.transactions import atomic
@@ -200,11 +201,15 @@ class MissionService:
 
     @staticmethod
     async def check_daily_post(user_id: str) -> bool:
-        answer = await AnswerService.get_most_recent_answer(user_id=user_id)
+        seoul_tz = pytz.timezone("Asia/Seoul")
+        now = datetime.now(seoul_tz)
 
+        current_date = (now - timedelta(days=1)).date() if now.hour < 6 else now.date()
+
+        answer = await AnswerService.get_most_recent_answer(user_id=user_id)
         answer_date = answer.get("date")
 
-        return answer_date == date.today()  # type: ignore
+        return answer_date == current_date  # type: ignore
 
     @staticmethod
     async def validate_reward(reward_code: str):  # type: ignore
