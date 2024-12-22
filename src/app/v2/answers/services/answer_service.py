@@ -1,6 +1,8 @@
 from datetime import datetime, timedelta
 from typing import Any
 
+import pytz
+
 from app.v2.answers.models.answer import Answer
 
 
@@ -27,7 +29,14 @@ class AnswerService:
 
     @classmethod
     async def get_answer_record(cls, user_id: str) -> int:
-        end_date = datetime.now()
+
+        seoul_tz = pytz.timezone("Asia/Seoul")
+        now = datetime.now(seoul_tz)
+
+        if now.hour < 6:
+            now -= timedelta(days=1)
+
+        end_date = now
         start_date = end_date - timedelta(days=100)
 
         all_answers = await Answer.find_all_by_user(user_id, start_date, end_date)
