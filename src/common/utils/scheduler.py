@@ -23,7 +23,7 @@ def start_scheduler() -> None:
     scheduler.add_job(
         func=execute_daily_task,
         trigger="cron",
-        hour=00,
+        hour=6,
         minute=00,
         id="daily_task",
         replace_existing=True,
