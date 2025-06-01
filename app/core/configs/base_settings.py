@@ -25,3 +25,7 @@ class Settings(BaseSettings):
     class Config:
         env_file = f".env.{os.getenv('ENV', 'local')}"
         env_file_encoding = "utf-8"
+
+    @property
+    def database_url(self) -> str:
+        return f"mysql+asyncmy://{self.DB_USER}:{self.DB_PASSWORD}" f"@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
