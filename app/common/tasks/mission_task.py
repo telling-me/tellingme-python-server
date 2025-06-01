@@ -1,6 +1,6 @@
 import asyncio
 
-from app.apis.v2.missions.models.mission import UserMission
+from app.models.mission import UserMission
 
 
 async def mission_reset_task() -> None:

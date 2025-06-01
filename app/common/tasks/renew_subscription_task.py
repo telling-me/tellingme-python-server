@@ -1,4 +1,4 @@
-from app.apis.v2.purchases.services.purchase_service import PurchaseService
+from app.services.purchase_service import PurchaseService
 
 
 async def renew_subscription_task() -> None:
