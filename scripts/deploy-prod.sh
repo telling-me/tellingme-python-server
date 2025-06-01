@@ -1,7 +1,7 @@
 cat deploy-prod.sh
 #!/bin/bash
 
-# src 디렉토리로 이동
+# apis 디렉토리로 이동
 cd "$(dirname "$0")/../src" || exit
 
 # .env.prod 파일 확인 및 로드

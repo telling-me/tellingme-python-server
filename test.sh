@@ -7,12 +7,12 @@ echo "Starting black"
 poetry run black .
 echo "OK"
 
-echo "Starting isort"
-poetry run isort .
+echo "Starting ruff"
+poetry run ruff check . --fix
 echo "OK"
 
 echo "Starting mypy"
-poetry run mypy .
+poetry run dmypy run -- .
 echo "OK"
 
 echo "Starting pytest with coverage"
