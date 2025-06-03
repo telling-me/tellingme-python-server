@@ -52,7 +52,7 @@ TORTOISE_ORM = {
 def database_initialize(app: FastAPI) -> None:
     Tortoise.init_models(TORTOISE_APP_MODELS, "models")
     register_tortoise(
-        app,
+        app=app,
         config=TORTOISE_ORM,
         generate_schemas=False,
         add_exception_handlers=True,

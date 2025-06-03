@@ -2,8 +2,8 @@ from typing import Any
 
 from fastapi import APIRouter, Depends
 
-from app.services.mission_service import MissionService
 from app.core.configs.celery_settings import process_mission_in_background
+from app.services.mission_service import MissionService
 
 mission_router = APIRouter(prefix="/mission", tags=["Mission"])
 

@@ -2,11 +2,11 @@ from typing import Optional
 
 from pydantic import BaseModel
 
+from app.dtos.base_response import BaseResponseDTO
 from app.dtos.badge.badge_dto import BadgeDTO
 from app.dtos.color.color_dto import ColorDTO
 from app.dtos.level.level_dto import LevelInfoDTO
 from app.dtos.user.user_info_dto import UserInfoDTO
-from app.common.base_models.base_dtos.base_response import BaseResponseDTO
 
 
 class DataDTO(BaseModel):

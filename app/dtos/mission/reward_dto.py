@@ -1,6 +1,6 @@
 from typing import Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class RewardDTO(BaseModel):
@@ -9,8 +9,7 @@ class RewardDTO(BaseModel):
     badge_code: Optional[str] = None
     badge_full_name: Optional[str] = None
 
-    class META:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
     @classmethod
     async def build(

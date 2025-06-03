@@ -4,14 +4,14 @@ from tortoise import fields
 from tortoise.fields import ForeignKeyRelation
 from tortoise.models import Model
 
-from app.models.answer import Answer
-from app.queries.like_query import SELECT_UNIQUE_LIKES_COUNT_BY_USER_TODAY_QUERY
-from app.models.user import User
 from app.common.utils.query_executor import QueryExecutor
+from app.models.answer import Answer
+from app.models.user import User
+from app.queries.like_query import SELECT_UNIQUE_LIKES_COUNT_BY_USER_TODAY_QUERY
 
 
 class Like(Model):
-    likes_id = fields.BigIntField(pk=True)
+    likes_id = fields.BigIntField(primary_key=True)
     answer: ForeignKeyRelation[Answer] = fields.ForeignKeyField(
         "models.Answer", related_name="likes", on_delete=fields.CASCADE
     )

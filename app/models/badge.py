@@ -4,18 +4,18 @@ from tortoise import fields
 from tortoise.fields import ForeignKeyRelation
 from tortoise.models import Model
 
+from app.common.utils.query_executor import QueryExecutor
+from app.models.user import User
 from app.queries.badge_query import (
     INSERT_BADGE_CODE_FOR_USER_QUERY,
     SELECT_BADGE_BY_USER_UUID_QUERY,
     SELECT_BADGE_CODE_BY_USER_UUID_QUERY,
     SELECT_BADGE_COUNT_BY_USER_UUID_QUERY,
 )
-from app.models.user import User
-from app.common.utils.query_executor import QueryExecutor
 
 
 class Badge(Model):
-    badge_id = fields.BigIntField(pk=True)
+    badge_id = fields.BigIntField(primary_key=True)
     badge_code = fields.CharField(max_length=255)
     user: ForeignKeyRelation[User] = fields.ForeignKeyField("models.User", related_name="badges")
 

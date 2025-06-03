@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from app.dtos.teller_card.response import TellerCardDTO
+from app.dtos.teller_card.teller_card_dto import TellerCardDTO
 
 
 class UserInfoDTO(BaseModel):

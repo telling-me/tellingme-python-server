@@ -3,7 +3,7 @@ from tortoise.fields import ForeignKeyRelation
 
 
 class ItemInventory(models.Model):
-    item_id = fields.BigIntField(pk=True)
+    item_id = fields.BigIntField(primary_key=True)
     item_category = fields.CharField(max_length=255, null=True)
     item_code = fields.CharField(max_length=255, null=True)
 
@@ -12,7 +12,7 @@ class ItemInventory(models.Model):
 
 
 class ProductInventory(models.Model):
-    product_id = fields.BigIntField(pk=True)
+    product_id = fields.BigIntField(primary_key=True)
     price = fields.FloatField(null=True)
     product_category = fields.CharField(max_length=255, null=True)
     product_code = fields.CharField(max_length=255, null=True)
@@ -23,7 +23,7 @@ class ProductInventory(models.Model):
 
 
 class ItemInventoryProductInventory(models.Model):
-    item_inventory_product_inventory_id = fields.BigIntField(pk=True)
+    item_inventory_product_inventory_id = fields.BigIntField(primary_key=True)
     quantity = fields.IntField()
     item_inventory: ForeignKeyRelation[ItemInventory] = fields.ForeignKeyField(
         "models.ItemInventory", related_name="product_inventories"
@@ -38,7 +38,7 @@ class ItemInventoryProductInventory(models.Model):
 
 
 class RewardInventory(models.Model):
-    reward_inventory_id = fields.BigIntField(pk=True)
+    reward_inventory_id = fields.BigIntField(primary_key=True)
     item_code = fields.CharField(max_length=255, null=True)
     reward_code = fields.CharField(max_length=255, null=True)
     reward_description = fields.CharField(max_length=255, null=True)
@@ -51,7 +51,7 @@ class RewardInventory(models.Model):
 
 
 class ItemInventoryRewardInventory(models.Model):
-    item_inventory_reward_invnetory_id = fields.BigIntField(pk=True)
+    item_inventory_reward_invnetory_id = fields.BigIntField(primary_key=True)
     quantity = fields.IntField()
     item_inventory: ForeignKeyRelation[ItemInventory] = fields.ForeignKeyField(
         "models.ItemInventory",

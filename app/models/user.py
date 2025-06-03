@@ -6,20 +6,20 @@ from tortoise import Tortoise, fields
 from tortoise.fields import ForeignKeyRelation
 from tortoise.models import Model
 
+from app.common.utils.query_executor import QueryExecutor
 from app.models.cheese_manager import CheeseManager
 from app.models.level import Level
-from app.models.teller_card import TellerCard
 from app.models.refresh_token import RefreshToken
+from app.models.teller_card import TellerCard
 from app.queries.user_query import (
     SELECT_USER_INFO_BY_USER_UUID_QUERY,
     SELECT_USER_PROFILE_BY_USER_ID_QUERY,
     UPDATE_PREMIUM_STATUS_QUERY,
 )
-from app.common.utils.query_executor import QueryExecutor
 
 
 class User(Model):
-    user_id = fields.CharField(max_length=255, pk=True, description="Primary key for the User")
+    user_id = fields.CharField(max_length=255, primary_key=True, description="Primary key for the User")
     allow_notification = fields.BooleanField(null=True)
     birth_date = fields.CharField(max_length=8, null=True)
     created_time = fields.DatetimeField(auto_now_add=True)

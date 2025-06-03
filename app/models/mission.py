@@ -4,13 +4,13 @@ from tortoise import fields
 from tortoise.fields import ForeignKeyRelation
 from tortoise.models import Model
 
-from app.queries.mission_query import SELECT_USER_MISSIONS_QUERY, UPDATE_USER_MISSION_PROGRESS_QUERY
-from app.models.user import User
 from app.common.utils.query_executor import QueryExecutor
+from app.models.user import User
+from app.queries.mission_query import SELECT_USER_MISSIONS_QUERY, UPDATE_USER_MISSION_PROGRESS_QUERY
 
 
 class UserMission(Model):
-    user_mission_id = fields.BigIntField(pk=True)
+    user_mission_id = fields.BigIntField(primary_key=True)
     is_completed = fields.BooleanField(default=False)
     mission_code = fields.CharField(max_length=255)
     progress_count = fields.IntField(default=0)
@@ -39,7 +39,7 @@ class UserMission(Model):
 
 
 class MissionInventory(Model):
-    mission_inventory_id = fields.BigIntField(pk=True)
+    mission_inventory_id = fields.BigIntField(primary_key=True)
     condition_type = fields.CharField(max_length=255)
     mission_code = fields.CharField(max_length=255)
     mission_description = fields.CharField(max_length=255)

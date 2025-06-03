@@ -5,12 +5,12 @@ from tortoise import fields
 from tortoise.fields import ForeignKeyRelation
 from tortoise.models import Model
 
-from app.models.user import User
 from app.common.utils.query_executor import QueryExecutor
+from app.models.user import User
 
 
 class Subscription(Model):
-    subscription_id = fields.BigIntField(pk=True, description="Primary key for the Subscription")
+    subscription_id = fields.BigIntField(primary_key=True, description="Primary key for the Subscription")
     product_code = fields.CharField(max_length=255, null=False, description="Product code of the subscription")
     status = fields.CharField(max_length=255, null=False, description="Status of the subscription")
     current_transaction_id = fields.CharField(max_length=255, null=False, description="Current transaction ID")
@@ -93,7 +93,7 @@ class Subscription(Model):
 
 
 class PurchaseHistory(Model):
-    purchase_history_id = fields.BigIntField(pk=True, description="Primary key for the Purchase History")
+    purchase_history_id = fields.BigIntField(primary_key=True, description="Primary key for the Purchase History")
     product_code = fields.CharField(max_length=255, null=False, description="Product code of the purchase")
     transaction_id = fields.CharField(max_length=255, unique=True, null=False, description="Transaction ID")
     original_transaction_id = fields.CharField(max_length=255, null=True, description="Original transaction ID")

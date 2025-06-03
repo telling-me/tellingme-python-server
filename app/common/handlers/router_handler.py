@@ -1,6 +1,5 @@
 from fastapi import FastAPI
 
-from app.apis.v2.answer_router import answer_router
 from app.apis.v2.badge_router import badge_router as badge_router
 from app.apis.v2.cheese_router import cheese_router as cheese_router
 from app.apis.v2.color_router import color_router as color_router
@@ -21,5 +20,4 @@ def attach_router_handlers(app: FastAPI) -> None:
     app.include_router(router=purchase_router, prefix="/api/v2")
     app.include_router(router=mission_router, prefix="/api/v2")
     app.include_router(router=cheese_router, prefix="/api/v2")
-    app.include_router(router=answer_router, prefix="/test")
     app.include_router(router=emotion_router, prefix="/api/v2")

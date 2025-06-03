@@ -1,22 +1,22 @@
 import asyncio
 from datetime import datetime, timedelta, timezone
 from typing import Optional
+from zoneinfo import ZoneInfo
 
-import pytz
 from fastapi import HTTPException
 from tortoise.exceptions import DoesNotExist
 from tortoise.transactions import atomic
 
+from app.dtos.mission.mission_dto import UserMissionDTO
+from app.dtos.mission.reward_dto import RewardDTO
+from app.models.item import ItemInventory, ItemInventoryRewardInventory, RewardInventory
+from app.models.like import Like
+from app.models.mission import MissionInventory, UserMission
 from app.services.answer_service import AnswerService
 from app.services.badge_service import BadgeService
 from app.services.cheese_service import CheeseService
 from app.services.color_service import ColorService
-from app.models.item import ItemInventory, ItemInventoryRewardInventory, RewardInventory
 from app.services.level_service import LevelService
-from app.models.like import Like
-from app.dtos.mission.mission_dto import UserMissionDTO
-from app.dtos.mission.reward_dto import RewardDTO
-from app.models.mission import MissionInventory, UserMission
 from app.services.notice_service import NoticeService
 from app.services.user_service import UserService
 
@@ -201,7 +201,7 @@ class MissionService:
 
     @staticmethod
     async def check_daily_post(user_id: str) -> bool:
-        seoul_tz = pytz.timezone("Asia/Seoul")
+        seoul_tz = ZoneInfo("Asia/Seoul")
         now = datetime.now(seoul_tz)
 
         current_date = (now - timedelta(days=1)).date() if now.hour < 6 else now.date()

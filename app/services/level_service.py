@@ -1,8 +1,8 @@
 from fastapi import HTTPException
 
-from app.services.answer_service import AnswerService
 from app.dtos.level.level_dto import LevelDTO, LevelInfoDTO
 from app.models.level import Level
+from app.services.answer_service import AnswerService
 
 
 class LevelService:

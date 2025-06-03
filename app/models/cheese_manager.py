@@ -10,7 +10,7 @@ from app.models.cheese_status import CheeseStatus
 
 
 class CheeseManager(Model):
-    cheese_manager_id = fields.BigIntField(pk=True)  # BIGINT auto_increment equivalent
+    cheese_manager_id = fields.BigIntField(primary_key=True)  # BIGINT auto_increment equivalent
 
     class Meta:
         table = "cheese_manager"  # Database table name
@@ -82,7 +82,7 @@ class CheeseManager(Model):
 
 
 class CheeseHistory(Model):
-    cheese_history_id = fields.BigIntField(pk=True)
+    cheese_history_id = fields.BigIntField(primary_key=True)
     status = fields.CharEnumField(CheeseStatus, max_length=50, null=True)  # Enum Field
     current_amount = fields.IntField()
     starting_amount = fields.IntField()

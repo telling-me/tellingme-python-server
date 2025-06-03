@@ -1,7 +1,6 @@
 from datetime import datetime, timedelta
 from typing import Any
-
-import pytz
+from zoneinfo import ZoneInfo
 
 from app.models.answer import Answer
 
@@ -30,7 +29,7 @@ class AnswerService:
     @classmethod
     async def get_answer_record(cls, user_id: str) -> int:
 
-        seoul_tz = pytz.timezone("Asia/Seoul")
+        seoul_tz = ZoneInfo("Asia/Seoul")
         now = datetime.now(seoul_tz)
 
         if now.hour < 6:

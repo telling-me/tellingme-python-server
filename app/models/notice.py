@@ -4,12 +4,12 @@ from tortoise import fields
 from tortoise.fields import ForeignKeyRelation
 from tortoise.models import Model
 
-from app.models.user import User
 from app.common.utils.query_executor import QueryExecutor
+from app.models.user import User
 
 
 class Notice(Model):
-    notice_id = fields.BigIntField(pk=True)
+    notice_id = fields.BigIntField(primary_key=True)
     title = fields.CharField(max_length=255, null=False)
     content = fields.TextField(null=True)
     is_read = fields.BooleanField(default=False)

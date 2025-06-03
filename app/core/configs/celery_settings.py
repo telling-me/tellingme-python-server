@@ -4,9 +4,9 @@ import logging
 from celery import Celery
 from tortoise import Tortoise
 
-from app.services.mission_service import MissionService
 from app.common.tasks.mission_task import mission_reset_task
 from app.core.database.tortoise_database_settings import TORTOISE_ORM
+from app.services.mission_service import MissionService
 
 celery_app = Celery(
     "telling-me-celery",

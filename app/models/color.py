@@ -4,17 +4,17 @@ from tortoise import fields
 from tortoise.fields import ForeignKeyRelation
 from tortoise.models import Model
 
+from app.common.utils.query_executor import QueryExecutor
+from app.models.user import User
 from app.queries.color_query import (
     INSERT_COLOR_CODE_FOR_USER_QUERY,
     SELECT_COLOR_BY_USER_UUID_QUERY,
     SELECT_COLOR_CODE_BY_USER_UUID_QUERY,
 )
-from app.models.user import User
-from app.common.utils.query_executor import QueryExecutor
 
 
 class Color(Model):
-    color_id = fields.BigIntField(pk=True)
+    color_id = fields.BigIntField(primary_key=True)
     color_code = fields.CharField(max_length=255, null=True)
     user: ForeignKeyRelation[User] = fields.ForeignKeyField(
         "models.User", related_name="colors", on_delete=fields.CASCADE

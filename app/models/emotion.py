@@ -3,16 +3,16 @@ from typing import Any
 from tortoise import fields, models
 from tortoise.fields import ForeignKeyRelation
 
+from app.common.utils.query_executor import QueryExecutor
+from app.models.user import User
 from app.queries.emotion_query import (
     INSERT_EMOTION_CODE_FOR_USER_QUERY,
     SELECT_EMOTION_CODE_BY_USER_UUID_QUERY,
 )
-from app.models.user import User
-from app.common.utils.query_executor import QueryExecutor
 
 
 class Emotion(models.Model):
-    emotion_id = fields.BigIntField(pk=True)
+    emotion_id = fields.BigIntField(primary_key=True)
     emotion_code = fields.CharField(max_length=255, unique=True)
     user: ForeignKeyRelation[User] = fields.ForeignKeyField("models.User", related_name="emotions")
 
@@ -33,7 +33,7 @@ class Emotion(models.Model):
 
 
 class EmotionInventory(models.Model):
-    emotion_inventory_id = fields.BigIntField(pk=True)
+    emotion_inventory_id = fields.BigIntField(primary_key=True)
     emotion_code = fields.CharField(max_length=255, unique=True)
     emotion_name = fields.CharField(max_length=255)
 

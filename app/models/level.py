@@ -3,15 +3,15 @@ from typing import Any
 from tortoise import fields
 from tortoise.models import Model
 
+from app.common.utils.query_executor import QueryExecutor
 from app.queries.level_query import (
     SELECT_USER_LEVEL_AND_REQUIRED_EXP_QUERY,
     UPDATE_USER_LEVEL_AND_EXP_QUERY,
 )
-from app.common.utils.query_executor import QueryExecutor
 
 
 class Level(Model):
-    level_id = fields.BigIntField(pk=True)
+    level_id = fields.BigIntField(primary_key=True)
     user_exp = fields.IntField()
     user_level = fields.IntField()
 
@@ -32,6 +32,6 @@ class Level(Model):
 
 
 class LevelInventory(Model):
-    level_inventory_id = fields.BigIntField(pk=True)
+    level_inventory_id = fields.BigIntField(primary_key=True)
     level = fields.IntField(null=True)
     required_exp = fields.IntField(null=True)

@@ -3,15 +3,15 @@ from typing import Any, Optional
 from tortoise import fields
 from tortoise.models import Model
 
+from app.common.utils.query_executor import QueryExecutor
 from app.queries.teller_card_query import (
     PATCH_TELLER_CARD_QUERY,
     SELECT_TELLER_CARD_INFO_BY_USER_UUID_QUERY,
 )
-from app.common.utils.query_executor import QueryExecutor
 
 
 class TellerCard(Model):
-    teller_card_id = fields.BigIntField(pk=True)
+    teller_card_id = fields.BigIntField(primary_key=True)
     activate_badge_code = fields.CharField(max_length=255, null=True)
     activate_color_code = fields.CharField(max_length=255, null=True)
 

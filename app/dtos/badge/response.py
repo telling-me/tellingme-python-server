@@ -1,6 +1,9 @@
+from app.dtos.base_response import BaseResponseDTO
 from app.dtos.badge.badge_dto import BadgeDTO
-from app.common.base_models.base_dtos.base_response import BaseResponseDTO
+from app.dtos.frozen_config import FROZEN_CONFIG
 
 
 class BadgeListResponseDTO(BaseResponseDTO):
+    model_config = FROZEN_CONFIG
+
     data: list[BadgeDTO]

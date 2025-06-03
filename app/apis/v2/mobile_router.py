@@ -2,24 +2,19 @@ import asyncio
 
 from fastapi import APIRouter, status
 
+from app.dtos.mobile.mypage_response import MyPageResponseDTO, UserProfileWithLevel
+from app.dtos.mobile.teller_card_response import DataDTO, TellerCardResponseDTO
+from app.dtos.user.user_info_dto import UserInfoDTO
+from app.dtos.user.user_profile_dto import UserProfileDTO
 from app.services.answer_service import AnswerService
 from app.services.badge_service import BadgeService
 from app.services.cheese_service import CheeseService
 from app.services.color_service import ColorService
 from app.services.level_service import LevelService
-from app.dtos.mobile.mypage_response import MyPageResponseDTO, UserProfileWithLevel
-from app.dtos.mobile.teller_card_response import DataDTO, TellerCardResponseDTO
 from app.services.teller_card_service import TellerCardService
-from app.dtos.user.user_info_dto import UserInfoDTO
-from app.dtos.user.user_profile_dto import UserProfileDTO
 from app.services.user_service import UserService
 
 mobile_router = APIRouter(prefix="/mobiles", tags=["모바일 화면용 컨트롤러"])
-
-
-@mobile_router.post("/main")
-async def mobile_main_handler() -> None:
-    pass
 
 
 @mobile_router.get(

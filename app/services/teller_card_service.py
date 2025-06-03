@@ -1,8 +1,8 @@
 from typing import Optional
 
+from app.dtos.teller_card.teller_card_dto import TellerCardDTO
 from app.models.badge import BadgeInventory
 from app.models.color import ColorInventory
-from app.dtos.teller_card.teller_card_dto import TellerCardDTO
 from app.models.teller_card import TellerCard
 
 
