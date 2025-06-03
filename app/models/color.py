@@ -31,7 +31,7 @@ class Color(Model):
         return await QueryExecutor.execute_query(query, values=value, fetch_type="multiple")
 
     @classmethod
-    async def add_color_code_for_user(cls, user_id: str, color_code: str) -> Any:
+    async def create_by_user_id(cls, user_id: str, color_code: str) -> Any:
         query = INSERT_COLOR_CODE_FOR_USER_QUERY
         values = (color_code, user_id)
         return await QueryExecutor.execute_query(query, values=values, fetch_type="single")

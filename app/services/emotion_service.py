@@ -11,10 +11,6 @@ from app.services.user_service import UserService
 class EmotionService:
 
     @classmethod
-    async def add_emotion(cls, user_id: str, emotion_code: str) -> None:
-        await Emotion.add_emotion(user_id=user_id, emotion_code=emotion_code)
-
-    @classmethod
     async def mapping_emotion_list(cls, user_id: str) -> EmotionDTO:
         user = await User.get_user_profile_by_user_id(user_id=user_id)
 

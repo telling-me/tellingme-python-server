@@ -43,7 +43,7 @@ class Badge(Model):
         return await QueryExecutor.execute_query(query, values=value, fetch_type="multiple")
 
     @classmethod
-    async def add_badge(cls, user_id: str, badge_code: str) -> None:
+    async def create_by_user_id(cls, user_id: str, badge_code: str) -> None:
         query = INSERT_BADGE_CODE_FOR_USER_QUERY
         values = (badge_code, user_id)
         await QueryExecutor.execute_query(query, values=values)

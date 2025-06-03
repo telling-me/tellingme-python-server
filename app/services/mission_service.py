@@ -9,17 +9,19 @@ from tortoise.transactions import atomic
 
 from app.dtos.mission.mission_dto import UserMissionDTO
 from app.dtos.mission.reward_dto import RewardDTO
+from app.models.badge import Badge
+from app.models.cheese_manager import CheeseManager
+from app.models.color import Color
 from app.models.item import ItemInventory, ItemInventoryRewardInventory, RewardInventory
 from app.models.like import Like
 from app.models.mission import MissionInventory, UserMission
 from app.models.user import User
 from app.services.answer_service import AnswerService
 from app.services.badge_service import BadgeService
-from app.services.cheese_service import CheeseService
+
 from app.services.color_service import ColorService
 from app.services.level_service import LevelService
 from app.services.notice_service import NoticeService
-from app.services.user_service import UserService
 
 
 class MissionService:
@@ -46,7 +48,7 @@ class MissionService:
     async def update_mission_progress(self, user_id: str) -> None:
 
         user, user_missions, missions = await asyncio.gather(
-            UserService.get_user_info(user_id=user_id),
+            User.get_user_info_by_user_id(user_id=user_id),
             self.get_user_missions(user_id=user_id),
             MissionInventory.all(),
         )
@@ -179,8 +181,8 @@ class MissionService:
 
     @staticmethod
     async def check_cheese_total(user_id: str) -> bool:
-        user = await UserService.get_user_info(user_id=user_id)
-        cheese_amount = await CheeseService.get_cheese_balance(user.cheese_manager_id)
+        user = await User.get_user_info_by_user_id(user_id=user_id)
+        cheese_amount = await CheeseManager.get_total_cheese_amount_by_manager(cheese_manager_id=user.cheese_manager_id)
 
         return cheese_amount >= 50
 
@@ -243,16 +245,16 @@ class MissionService:
 
             if item.item_category == "BADGE":
                 for _ in range(quantity):
-                    await BadgeService.add_badge(user_id=user_id, badge_code=item.item_code)
+                    await Badge.create_by_user_id(user_id=user_id, badge_code=item.item_code)
                     badge = await BadgeService.get_badge_info_by_badge_code(badge_code=item.item_code)
                     badge_info.append(badge)
 
             elif item.item_category == "COLOR":
                 for _ in range(quantity):
-                    await ColorService.add_color(user_id=user_id, color_code=item.item_code)
+                    await Color.create_by_user_id(user_id=user_id, color_code=item.item_code)
             elif item.item_category == "CHEESE":
                 total_cheese += quantity
-                await CheeseService.add_cheese(cheese_manager_id=cheese_manager_id, amount=quantity)
+                await CheeseManager.add_cheese(cheese_manager_id=cheese_manager_id, amount=quantity)
             elif item.item_category == "POINT":
                 total_exp += quantity
                 await LevelService.add_exp(user_id=user_id, exp=quantity)
@@ -328,7 +330,7 @@ class MissionService:
         await LevelService.add_exp(user_id=user_id, exp=exp)
 
         # 치즈 추가
-        await CheeseService.add_cheese(cheese_manager_id=cheese_manager_id, amount=cheese)
+        await CheeseManager.add_cheese(cheese_manager_id=cheese_manager_id, amount=cheese)
 
     @staticmethod
     async def _create_reward_notice(

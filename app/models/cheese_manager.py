@@ -1,75 +1,58 @@
-from typing import Any
-
 from tortoise import fields
 from tortoise.expressions import Q
 from tortoise.fields import ForeignKeyRelation
 from tortoise.functions import Sum
 from tortoise.models import Model
 
+
 from app.models.cheese_status import CheeseStatus
 
 
 class CheeseManager(Model):
-    cheese_manager_id = fields.BigIntField(primary_key=True)  # BIGINT auto_increment equivalent
+    """
+    Cheese Manager 치즈 관련 작업을 하는 모델 겸 서비스
+    """
+
+    cheese_manager_id = fields.BigIntField(primary_key=True)
 
     class Meta:
-        table = "cheese_manager"  # Database table name
+        table = "cheese_manager"
 
     @staticmethod
     async def get_total_cheese_amount_by_manager(cheese_manager_id: int) -> int:
-        result: list[dict[str, Any]] = (
-            await CheeseHistory.filter(
-                Q(status=CheeseStatus.CAN_USE) | Q(status=CheeseStatus.USING),
-                cheese_manager_id=cheese_manager_id,
-            )
-            .annotate(total_cheese_amount=Sum("current_amount"))
-            .values("total_cheese_amount")
-        )
-        if not result or result[0].get("total_cheese_amount") is None:
-            return 0
+        return await CheeseHistory.get_total_amount_by_manager(cheese_manager_id)
 
-        total_cheese_amount = result[0].get("total_cheese_amount")
-        return int(total_cheese_amount) if total_cheese_amount is not None else 0
+    @classmethod
+    async def use_cheese(cls, cheese_manager_id: int, amount: int) -> None:
+        remaining = amount
 
-    @staticmethod
-    async def use_cheese(cheese_manager_id: int, amount: int) -> None:
-        using_cheese = await CheeseHistory.filter(
-            status=CheeseStatus.USING, cheese_manager_id=cheese_manager_id
-        ).order_by("cheese_history_id")
-
-        remaining_amount = amount
-
-        for cheese in using_cheese:
-            if cheese.current_amount >= remaining_amount:
-                cheese.current_amount -= remaining_amount
+        using_cheeses = await CheeseHistory.get_using_cheeses(cheese_manager_id)
+        for cheese in using_cheeses:
+            if cheese.current_amount >= remaining:
+                cheese.current_amount -= remaining
                 if cheese.current_amount == 0:
                     cheese.status = CheeseStatus.ALREADY_USED
                 await cheese.save()
                 return
+            else:
+                remaining -= cheese.current_amount
+                cheese.current_amount = 0
+                cheese.status = CheeseStatus.ALREADY_USED
+                await cheese.save()
 
-            remaining_amount -= cheese.current_amount
-            cheese.current_amount = 0
-            cheese.status = CheeseStatus.ALREADY_USED
-            await cheese.save()
+        can_use_cheeses = await CheeseHistory.get_can_use_cheeses(cheese_manager_id)
 
-        can_use_cheese = await CheeseHistory.filter(
-            status=CheeseStatus.CAN_USE, cheese_manager_id=cheese_manager_id
-        ).order_by("cheese_history_id")
-
-        for cheese in can_use_cheese:
-            if cheese.current_amount >= remaining_amount:
-                cheese.current_amount -= remaining_amount
-                cheese.status = CheeseStatus.USING
+        for cheese in can_use_cheeses:
+            if cheese.current_amount >= remaining:
+                cheese.current_amount -= remaining
+                cheese.status = CheeseStatus.USING if cheese.current_amount > 0 else CheeseStatus.ALREADY_USED
                 await cheese.save()
                 return
-
-            remaining_amount -= cheese.current_amount
-            cheese.current_amount = 0
-            cheese.status = CheeseStatus.ALREADY_USED
-            await cheese.save()
-
-        if remaining_amount > 0:
-            raise ValueError("Not enough cheese to complete the transaction")
+            else:
+                remaining -= cheese.current_amount
+                cheese.current_amount = 0
+                cheese.status = CheeseStatus.ALREADY_USED
+                await cheese.save()
 
     @staticmethod
     async def add_cheese(cheese_manager_id: int, amount: int) -> None:
@@ -83,7 +66,7 @@ class CheeseManager(Model):
 
 class CheeseHistory(Model):
     cheese_history_id = fields.BigIntField(primary_key=True)
-    status = fields.CharEnumField(CheeseStatus, max_length=50, null=True)  # Enum Field
+    status = fields.CharEnumField(CheeseStatus, max_length=50, null=True)
     current_amount = fields.IntField()
     starting_amount = fields.IntField()
     cheese_manager: ForeignKeyRelation[CheeseManager] = fields.ForeignKeyField(
@@ -94,3 +77,23 @@ class CheeseHistory(Model):
 
     class Meta:
         table = "cheese_history"
+
+    @classmethod
+    async def get_total_amount_by_manager(cls, manager_id: int) -> int:
+        result = await (
+            cls.filter(
+                Q(status=CheeseStatus.CAN_USE) | Q(status=CheeseStatus.USING),
+                cheese_manager_id=manager_id,
+            )
+            .annotate(total=Sum("current_amount"))
+            .values_list("total", flat=True)
+        )
+        return int(result[0]) if result and result[0] is not None else 0
+
+    @classmethod
+    async def get_using_cheeses(cls, manager_id: int) -> list["CheeseHistory"]:
+        return await cls.filter(status=CheeseStatus.USING, cheese_manager_id=manager_id).order_by("cheese_history_id")
+
+    @classmethod
+    async def get_can_use_cheeses(cls, manager_id: int) -> list["CheeseHistory"]:
+        return await cls.filter(status=CheeseStatus.CAN_USE, cheese_manager_id=manager_id).order_by("cheese_history_id")

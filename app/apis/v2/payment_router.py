@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, status
 
-from app.dtos.payment.request import PaymentRequestDTO
-from app.dtos.payment.response import PaymentResponseDTO
+from app.dtos.payment.payment_request import PaymentRequest
+from app.dtos.payment.payment_response import PaymentResponse, ProductDTO
 from app.services.payment_service import PaymentService
 from app.services.user_service import UserService
 
@@ -10,24 +10,16 @@ payment_router = APIRouter(prefix="/payment", tags=["Payment"])
 
 @payment_router.post(
     "",
-    response_model=PaymentResponseDTO,
+    response_model=PaymentResponse,
     status_code=status.HTTP_200_OK,
 )
-async def process_payment(request: PaymentRequestDTO) -> PaymentResponseDTO:
-    try:
-        user_id = request.user_id
-        product_code = request.productCode
-
-        product, item_inventory_products = await PaymentService.validate_payment(product_code)
-
-        user = await UserService.get_user_info(user_id=user_id)
-
-        await PaymentService.process_cheese_payment(
-            product, item_inventory_products, user_id, user["cheese_manager_id"]
-        )
-        return PaymentResponseDTO.builder(product_code=product.product_code)
-
-    except HTTPException as e:
-        raise e
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+async def process_payment(payment_request: PaymentRequest) -> PaymentResponse:
+    return PaymentResponse(
+        code=status.HTTP_200_OK,
+        data=ProductDTO(
+            product_code=await PaymentService.process_cheese_payment(
+                product_code=payment_request.productCode, user_id=payment_request.user_id
+            ),
+        ),
+        message="Payment successful",
+    )

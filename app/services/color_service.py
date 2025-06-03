@@ -12,10 +12,6 @@ class ColorService:
         return [ColorCodeDTO.builder(color) for color in colors_raw]
 
     @classmethod
-    async def add_color(cls, user_id: str, color_code: str) -> None:
-        await Color.add_color_code_for_user(user_id=user_id, color_code=color_code)
-
-    @classmethod
     async def get_colors_with_details_by_user_id(cls, user_id: str) -> list[ColorDTO]:
         user = await User.get_user_profile_by_user_id(user_id=user_id)
 

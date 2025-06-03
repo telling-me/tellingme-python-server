@@ -7,6 +7,7 @@ from tortoise.fields import ForeignKeyRelation
 from tortoise.models import Model
 
 from app.common.utils.query_executor import QueryExecutor
+from app.dtos.user.user_data import UserData
 from app.dtos.user.user_dto import UserProfileData
 from app.models.cheese_manager import CheeseManager
 from app.models.level import Level
@@ -83,10 +84,11 @@ class User(Model):
         )
 
     @classmethod
-    async def get_user_info_by_user_id(cls, user_id: str) -> Any:
+    async def get_user_info_by_user_id(cls, user_id: str) -> UserData:
         query = SELECT_USER_INFO_BY_USER_UUID_QUERY
         value = user_id
-        return await QueryExecutor.execute_query(query, values=value, fetch_type="single")
+        result = await QueryExecutor.execute_query(query, values=value, fetch_type="single")
+        return UserData(**result)
 
     @classmethod
     async def set_is_premium(cls, user_id: str, is_premium: bool) -> Any:

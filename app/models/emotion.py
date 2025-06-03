@@ -28,7 +28,7 @@ class Emotion(models.Model):
         return [EmotionData(**row) for row in result]
 
     @classmethod
-    async def add_emotion(cls, user_id: str, emotion_code: str) -> None:
+    async def create_by_user_id(cls, user_id: str, emotion_code: str) -> None:
         query = INSERT_EMOTION_CODE_FOR_USER_QUERY
         values = (emotion_code, user_id)
         await QueryExecutor.execute_query(query, values=values)

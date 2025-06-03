@@ -8,8 +8,7 @@ from app.models.user import User
 class UserService:
     @staticmethod
     async def get_user_info(user_id: str) -> UserData:
-        result = await User.get_user_info_by_user_id(user_id=user_id)
-        return UserData(**result)
+        return await User.get_user_info_by_user_id(user_id=user_id)
 
     @classmethod
     async def get_user_profile(cls, user_id: str) -> UserProfileData:
