@@ -12,6 +12,7 @@ from app.dtos.mission.reward_dto import RewardDTO
 from app.models.item import ItemInventory, ItemInventoryRewardInventory, RewardInventory
 from app.models.like import Like
 from app.models.mission import MissionInventory, UserMission
+from app.models.user import User
 from app.services.answer_service import AnswerService
 from app.services.badge_service import BadgeService
 from app.services.cheese_service import CheeseService
@@ -361,9 +362,9 @@ class MissionService:
             cheese_manager_id=cheese_manager_id,
         )
         level_info = await LevelService.get_level_info_add_answer_days(user_id)
-        user_info = await UserService.get_user_profile(user_id=user_id)
+        user_profile = await User.get_user_profile_by_user_id(user_id=user_id)
 
-        nickname = user_info.nickname
+        nickname = user_profile.nickname
         level = level_info.levelDto.level
 
         await self._create_reward_notice(

@@ -1,8 +1,10 @@
 from app.queries.user_query import USER_ID_QUERY
 
 SELECT_EMOTION_CODE_BY_USER_UUID_QUERY = f"""
-    SELECT emotion_code
-    FROM emotion
+    SELECT e.emotion_code, ei.emotion_name
+    FROM emotion e
+    JOIN emotion_inventory ei
+    ON e.emotion_code = ei.emotion_code
     WHERE {USER_ID_QUERY}
     """
 

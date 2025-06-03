@@ -54,7 +54,7 @@ class PurchaseService:
             status=subscription_status,
         )
 
-        user = await UserService.get_user_profile(user_id=user_id)
+        user = await User.get_user_profile_by_user_id(user_id=user_id)
 
         return PurchaseResponseDTO.build(is_premium=user.is_premium, product_code=receipt_info.product_code_two)  # type: ignore
 

@@ -12,9 +12,8 @@ color_router = APIRouter(prefix="/user/color", tags=["Color"])
     status_code=status.HTTP_200_OK,
 )
 async def api_get_user_colors(user_id: str) -> ColorsResponse:
-    colors = await ColorService.get_colors_with_details_by_user_id(user_id=user_id)
     return ColorsResponse(
         code=status.HTTP_200_OK,
         message="보유 색상 정보 조회",
-        data=colors,
+        data=await ColorService.get_colors_with_details_by_user_id(user_id=user_id),
     )
