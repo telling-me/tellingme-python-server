@@ -1,13 +1,15 @@
 from typing import Any
 
+from app.dtos.user.user_data import UserData
 from app.dtos.user.user_dto import UserDTO
 from app.models.user import User
 
 
 class UserService:
     @staticmethod
-    async def get_user_info(user_id: str) -> Any:
-        return await User.get_user_info_by_user_id(user_id=user_id)
+    async def get_user_info(user_id: str) -> UserData:
+        result = await User.get_user_info_by_user_id(user_id=user_id)
+        return UserData(**result)
 
     @classmethod
     async def get_user_profile(cls, user_id: str) -> UserDTO:

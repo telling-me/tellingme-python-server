@@ -35,9 +35,9 @@ async def mobile_teller_card_handler(user_id: str) -> TellerCardResponseDTO:
         badges_task, colors_task, level_info_task, teller_card_task, user_info_task, record_answer_task
     )
 
-    cheese_amount = await CheeseService.get_cheese_balance(user_raw["cheese_manager_id"])
+    cheese_amount = await CheeseService.get_cheese_balance(user_raw.cheese_manager_id)
 
-    user_info = UserInfoDTO.builder(user_raw, cheeseBalance=cheese_amount, tellerCard=teller_card)
+    user_info = UserInfoDTO(nickname=user_raw.nickname, cheeseBalance=cheese_amount, tellerCard=teller_card)
 
     data = DataDTO.builder(
         badges=badges, colors=colors, userInfo=user_info, levelInfo=level_info, recordCount=record_count

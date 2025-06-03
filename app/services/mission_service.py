@@ -179,7 +179,7 @@ class MissionService:
     @staticmethod
     async def check_cheese_total(user_id: str) -> bool:
         user = await UserService.get_user_info(user_id=user_id)
-        cheese_amount = await CheeseService.get_cheese_balance(user["cheese_manager_id"])
+        cheese_amount = await CheeseService.get_cheese_balance(user.cheese_manager_id)
 
         return cheese_amount >= 50
 
