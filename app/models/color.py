@@ -5,6 +5,7 @@ from tortoise.fields import ForeignKeyRelation
 from tortoise.models import Model
 
 from app.common.utils.query_executor import QueryExecutor
+from app.dtos.color.color_data import ColorData
 from app.models.user import User
 from app.queries.color_query import (
     INSERT_COLOR_CODE_FOR_USER_QUERY,
@@ -36,20 +37,8 @@ class Color(Model):
         return await QueryExecutor.execute_query(query, values=values, fetch_type="single")
 
     @classmethod
-    async def get_colors_with_details_by_user_id(cls, user_id: str) -> Any:
+    async def get_colors_with_details_by_user_id(cls, user_id: str) -> list[ColorData]:
         query = SELECT_COLOR_BY_USER_UUID_QUERY
         value = user_id
-        return await QueryExecutor.execute_query(query, values=value, fetch_type="multiple")
-
-
-class ColorInventory(Model):
-    color_code = fields.CharField(max_length=255, primary_key=True)
-    color_name = fields.CharField(max_length=255, null=True)
-    color_hex_code = fields.CharField(max_length=255, null=True)
-
-    class Meta:
-        table = "color_inventory"  # 테이블 이름을 명시
-
-    @classmethod
-    async def get_color_inventory(cls) -> list[dict[str, str]]:
-        return await cls.all().values("color_code", "color_name", "color_hex_code")
+        result = await QueryExecutor.execute_query(query, values=value, fetch_type="multiple")
+        return [ColorData(**row) for row in result]

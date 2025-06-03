@@ -7,6 +7,7 @@ from tortoise.fields import ForeignKeyRelation
 from tortoise.models import Model
 
 from app.common.utils.query_executor import QueryExecutor
+from app.dtos.user.user_dto import UserProfileData
 from app.models.cheese_manager import CheeseManager
 from app.models.level import Level
 from app.models.refresh_token import RefreshToken
@@ -65,10 +66,21 @@ class User(Model):
         table = "user"
 
     @classmethod
-    async def get_user_profile_by_user_id(cls, user_id: str) -> Any:
+    async def get_user_profile_by_user_id(cls, user_id: str) -> UserProfileData:
         query = SELECT_USER_PROFILE_BY_USER_ID_QUERY
         value = user_id
-        return await QueryExecutor.execute_query(query, values=value, fetch_type="single")
+        result = await QueryExecutor.execute_query(query, values=value, fetch_type="single")
+        return UserProfileData(
+            user_id=result.get("user_id", ""),
+            nickname=result.get("nickname", ""),
+            profile_url=result.get("profile_url", ""),
+            is_premium=result.get("is_premium") != b"\x00",
+            user_status=result.get("user_status") != b"\x00",
+            cheese_manager_id=result.get("cheese_manager_id", 0),
+            teller_card_id=result.get("teller_card_id", 0),
+            level_id=result.get("level_id", 0),
+            allow_notification=result.get("allow_notification") != b"\x00",
+        )
 
     @classmethod
     async def get_user_info_by_user_id(cls, user_id: str) -> Any:

@@ -6,8 +6,12 @@ SELECT_USER_BY_UUID_QUERY = f"SELECT * FROM user WHERE {USER_ID_QUERY} LIMIT 1"
 SELECT_USER_PROFILE_BY_USER_ID_QUERY = f"""
     SELECT
         u.nickname,
+        u.profile_url,
         u.is_premium,
+        u.user_status,
         u.cheese_manager_id,
+        u.teller_card_id,
+        u.level_id,
         u.allow_notification
     FROM user u
     WHERE {USER_ID_QUERY}

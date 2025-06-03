@@ -1,7 +1,7 @@
 from typing import Any
 
 from app.dtos.user.user_data import UserData
-from app.dtos.user.user_dto import UserDTO
+from app.dtos.user.user_dto import UserDTO, UserProfileData
 from app.models.user import User
 
 
@@ -12,8 +12,8 @@ class UserService:
         return UserData(**result)
 
     @classmethod
-    async def get_user_profile(cls, user_id: str) -> UserDTO:
-        return UserDTO.build(await User.get_user_profile_by_user_id(user_id=user_id))
+    async def get_user_profile(cls, user_id: str) -> UserProfileData:
+        return await User.get_user_profile_by_user_id(user_id=user_id)
 
     @staticmethod
     async def set_is_premium(user_id: str, is_premium: bool) -> None:

@@ -10,6 +10,7 @@ TORTOISE_APP_MODELS = [
     "app.models.refresh_token",
     "app.models.badge",
     "app.models.color",
+    "app.models.color_inventory",
     "app.models.answer",
     "app.models.teller_card",
     "app.models.level",

@@ -11,7 +11,7 @@ badge_router = APIRouter(prefix="/user/badge", tags=["Badge"])
     response_model=BadgesResponse,
     status_code=status.HTTP_200_OK,
 )
-async def get_user_badge_handler(user_id: str) -> BadgesResponse:
+async def api_get_user_badges(user_id: str) -> BadgesResponse:
     badges = await BadgeService.get_badges_with_details_by_user_id(user_id)
     return BadgesResponse(
         code=status.HTTP_200_OK,

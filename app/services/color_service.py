@@ -1,6 +1,8 @@
-from app.dtos.color.color_dto import ColorCodeDTO, ColorDTO
-from app.models.color import Color, ColorInventory
-from app.services.user_service import UserService
+from app.dtos.color.color_dto import ColorDTO
+from app.dtos.color.color_code_dto import ColorCodeDTO
+from app.models.color import Color
+from app.models.color_inventory import ColorInventory
+from app.models.user import User
 
 
 class ColorService:
@@ -15,14 +17,18 @@ class ColorService:
 
     @classmethod
     async def get_colors_with_details_by_user_id(cls, user_id: str) -> list[ColorDTO]:
-        user = await UserService.get_user_profile(user_id=user_id)
+        user = await User.get_user_profile_by_user_id(user_id=user_id)
+
         if user.is_premium:
-            colors_raw = await ColorInventory.get_color_inventory()
+            colors = await ColorInventory.get_color_inventory()
         else:
-            colors_raw = await Color.get_colors_with_details_by_user_id(user_id=user_id)
+            colors = await Color.get_colors_with_details_by_user_id(user_id=user_id)
 
-        return [ColorDTO.builder(color) for color in colors_raw]
-
-    @classmethod
-    async def get_color_inventory(cls) -> list[dict[str, str]]:
-        return await ColorInventory.get_color_inventory()
+        return [
+            ColorDTO(
+                colorCode=color.color_code,
+                colorName=color.color_name,
+                colorHexCode=color.color_hex_code,
+            )
+            for color in colors
+        ]
