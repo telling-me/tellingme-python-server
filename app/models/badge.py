@@ -5,6 +5,7 @@ from tortoise.fields import ForeignKeyRelation
 from tortoise.models import Model
 
 from app.common.utils.query_executor import QueryExecutor
+from app.dtos.badge.badge_data import BadgeData
 from app.models.user import User
 from app.queries.badge_query import (
     INSERT_BADGE_CODE_FOR_USER_QUERY,
@@ -29,10 +30,11 @@ class Badge(Model):
         return await QueryExecutor.execute_query(query, values=value, fetch_type="single")
 
     @classmethod
-    async def get_badges_with_details_by_user_id(cls, user_id: str) -> Any:
+    async def get_badges_with_details_by_user_id(cls, user_id: str) -> list[BadgeData]:
         query = SELECT_BADGE_BY_USER_UUID_QUERY
         value = user_id
-        return await QueryExecutor.execute_query(query, values=value, fetch_type="multiple")
+        result = await QueryExecutor.execute_query(query, values=value, fetch_type="multiple")
+        return [BadgeData(**row) for row in result]
 
     @classmethod
     async def get_badge_codes_by_user_id(cls, user_id: str) -> Any:
