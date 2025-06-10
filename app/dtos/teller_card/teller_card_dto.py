@@ -1,17 +1,12 @@
 from pydantic import BaseModel
 
+from app.dtos.frozen_config import FROZEN_CONFIG
+
 
 class TellerCardDTO(BaseModel):
+    model_config = FROZEN_CONFIG
+
+    colorCode: str
     badgeCode: str
     badgeName: str
     badgeMiddleName: str
-    colorCode: str
-
-    @classmethod
-    def builder(cls, teller_card_raw: dict[str, str]) -> "TellerCardDTO":
-        return cls(
-            badgeCode=teller_card_raw.get("activate_badge_code", ""),
-            badgeName=teller_card_raw.get("badge_name", ""),
-            badgeMiddleName=teller_card_raw.get("badge_middle_name", ""),
-            colorCode=teller_card_raw.get("activate_color_code", ""),
-        )

@@ -9,19 +9,28 @@ from app.models.teller_card import TellerCard
 class TellerCardService:
     @classmethod
     async def get_teller_card(cls, user_id: str) -> TellerCardDTO:
-        teller_cards_raw: dict[str, str] = await TellerCard.get_teller_card_info_by_user_id(user_id=user_id)
-        return TellerCardDTO.builder(teller_cards_raw)
+        teller_card = await TellerCard.get_teller_card_info_by_user_id(user_id=user_id)
+        return TellerCardDTO(
+            badgeCode=teller_card.activate_badge_code,
+            badgeName=teller_card.badge_name,
+            badgeMiddleName=teller_card.badge_middle_name,
+            colorCode=teller_card.activate_color_code,
+        )
 
     @classmethod
     async def patch_teller_card(
-        cls, user_id: str, badge_code: Optional[str] = None, color_code: Optional[str] = None
-    ) -> None:
+        cls, user_id: str, badge_code: str | None = None, color_code: str | None = None
+    ) -> TellerCardDTO:
+        await cls._validate_teller_card(badge_code=badge_code, color_code=color_code)
+
         await TellerCard.patch_teller_card_info_by_user_id(
             user_id=user_id, badge_code=badge_code, color_code=color_code
         )
 
+        return await cls.get_teller_card(user_id=user_id)
+
     @classmethod
-    async def validate_teller_card(cls, badge_code: Optional[str], color_code: Optional[str]) -> None:
+    async def _validate_teller_card(cls, badge_code: str | None, color_code: str | None) -> None:
         badge_code_list = await BadgeInventory.all().values("badge_code")
         color_code_list = await ColorInventory.all().values("color_code")
         badge_codes = [badge["badge_code"] for badge in badge_code_list]
