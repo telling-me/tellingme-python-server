@@ -1,5 +1,5 @@
-from app.dtos.badge.badge_dto import BadgeDTO
 from app.dtos.badge.badge_code_dto import BadgeCodeDTO
+from app.dtos.badge.badge_dto import BadgeDTO
 from app.models.badge import Badge, BadgeInventory
 
 

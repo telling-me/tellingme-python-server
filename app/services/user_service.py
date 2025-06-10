@@ -1,7 +1,5 @@
-from typing import Any
-
 from app.dtos.user.user_data import UserData
-from app.dtos.user.user_dto import UserDTO, UserProfileData
+from app.dtos.user.user_dto import UserProfileData
 from app.models.user import User
 
 

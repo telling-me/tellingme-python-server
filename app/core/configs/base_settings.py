@@ -1,5 +1,6 @@
 import os
 from enum import StrEnum
+from zoneinfo import ZoneInfo
 
 from pydantic_settings import BaseSettings
 
@@ -29,3 +30,7 @@ class Settings(BaseSettings):
     @property
     def database_url(self) -> str:
         return f"mysql+asyncmy://{self.DB_USER}:{self.DB_PASSWORD}" f"@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
+
+    @property
+    def db_zoneinfo(self) -> ZoneInfo:
+        return ZoneInfo(self.DB_TIMEZONE)

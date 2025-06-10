@@ -1,12 +1,12 @@
 import asyncio
 from datetime import datetime, timedelta, timezone
 from typing import Optional
-from zoneinfo import ZoneInfo
 
 from fastapi import HTTPException
 from tortoise.exceptions import DoesNotExist
 from tortoise.transactions import atomic
 
+from app.core.configs import settings
 from app.dtos.mission.mission_dto import UserMissionDTO
 from app.dtos.mission.reward_dto import RewardDTO
 from app.models.badge import Badge
@@ -18,8 +18,6 @@ from app.models.mission import MissionInventory, UserMission
 from app.models.user import User
 from app.services.answer_service import AnswerService
 from app.services.badge_service import BadgeService
-
-from app.services.color_service import ColorService
 from app.services.level_service import LevelService
 from app.services.notice_service import NoticeService
 
@@ -53,7 +51,7 @@ class MissionService:
             MissionInventory.all(),
         )
 
-        cheese_manager_id: int = user["cheese_manager_id"]
+        cheese_manager_id: int = user.cheese_manager_id
         mission_dict = {mission.mission_code: mission for mission in missions}
 
         badge_missions, lv_up_mission, daily_missions = await self._classify_missions(user_missions)
@@ -204,8 +202,7 @@ class MissionService:
 
     @staticmethod
     async def check_daily_post(user_id: str) -> bool:
-        seoul_tz = ZoneInfo("Asia/Seoul")
-        now = datetime.now(seoul_tz)
+        now = datetime.now(settings.db_zoneinfo)
 
         current_date = (now - timedelta(days=1)).date() if now.hour < 6 else now.date()
 

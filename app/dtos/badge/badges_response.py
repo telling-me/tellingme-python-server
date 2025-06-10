@@ -1,5 +1,5 @@
-from app.dtos.base_response import BaseResponseDTO
 from app.dtos.badge.badge_dto import BadgeDTO
+from app.dtos.base_response import BaseResponseDTO
 from app.dtos.frozen_config import FROZEN_CONFIG
 
 

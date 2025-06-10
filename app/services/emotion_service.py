@@ -1,11 +1,8 @@
-from typing import Any
-
 from app.common.constants.emotion_dict import EMOTION_DICT
 from app.dtos.emotion.emotion_data import EmotionData
 from app.dtos.emotion.emotion_dto import EmotionDTO
 from app.models.emotion import Emotion, EmotionInventory
 from app.models.user import User
-from app.services.user_service import UserService
 
 
 class EmotionService:

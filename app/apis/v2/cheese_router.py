@@ -2,7 +2,6 @@ from fastapi import APIRouter, status
 
 from app.dtos.cheese.cheese_response import CheeseResponse, TotalCheeseAmount
 from app.models.cheese_manager import CheeseManager
-
 from app.services.user_service import UserService
 
 cheese_router = APIRouter(prefix="/cheese", tags=["Cheese"])

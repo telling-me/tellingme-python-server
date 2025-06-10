@@ -24,6 +24,3 @@ async def patch_teller_card_handler(
             color_code=teller_card_request.colorCode,
         ),
     )
-
-
-# todo : teller card, mission, mobile refactoring 및 purchase 삭제 및 테스트 코드 작성

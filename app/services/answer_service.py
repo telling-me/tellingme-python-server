@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from typing import Any
-from zoneinfo import ZoneInfo
 
+from app.core.configs import settings
 from app.models.answer import Answer
 
 
@@ -28,9 +28,7 @@ class AnswerService:
 
     @classmethod
     async def get_answer_record(cls, user_id: str) -> int:
-
-        seoul_tz = ZoneInfo("Asia/Seoul")
-        now = datetime.now(seoul_tz)
+        now = datetime.now(settings.db_zoneinfo)
 
         if now.hour < 6:
             now -= timedelta(days=1)
@@ -38,14 +36,14 @@ class AnswerService:
         end_date = now
         start_date = end_date - timedelta(days=100)
 
-        all_answers = await Answer.find_all_by_user(user_id, start_date, end_date)
+        all_answers = await Answer.get_all_by_user_id(user_id, start_date, end_date)
 
         record = 0
         target_date = end_date
 
         if all_answers:
             for answer in all_answers:
-                answer_date = answer["date"]
+                answer_date = answer.date
 
                 if answer_date == target_date.date():  # 날짜만 비교
                     record += 1

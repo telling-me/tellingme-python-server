@@ -10,9 +10,6 @@ from app.models.color import Color
 from app.models.emotion import Emotion
 from app.models.item import ItemInventory, ItemInventoryProductInventory, ProductInventory
 from app.models.user import User
-from app.services.badge_service import BadgeService
-from app.services.color_service import ColorService
-from app.services.emotion_service import EmotionService
 
 
 class PaymentService:

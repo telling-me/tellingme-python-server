@@ -6,6 +6,7 @@ from tortoise.fields import ForeignKeyRelation
 from tortoise.models import Model
 
 from app.common.utils.query_executor import QueryExecutor
+from app.dtos.answer.answer_data import AnswerData
 from app.models.user import User
 from app.queries.answer_query import (
     SELECT_ANSWER_BY_USER_UUID_QUERY,
@@ -53,10 +54,11 @@ class Answer(Model):
         return await QueryExecutor.execute_query(query, values=value, fetch_type="single")
 
     @classmethod
-    async def find_all_by_user(cls, user_id: str, start_date: datetime, end_date: datetime) -> Any:
+    async def get_all_by_user_id(cls, user_id: str, start_date: datetime, end_date: datetime) -> list[AnswerData]:
         query = SELECT_ANSWER_BY_USER_UUID_QUERY
         values = (user_id, start_date, end_date)
-        return await QueryExecutor.execute_query(query, values=values, fetch_type="multiple")
+        results = await QueryExecutor.execute_query(query, values=values, fetch_type="multiple")
+        return [AnswerData(**row) for row in results]
 
     @classmethod
     async def get_most_recent_answer_by_user_id(cls, user_id: str) -> Any:

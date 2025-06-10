@@ -1,9 +1,10 @@
+from typing import cast
+
 from tortoise import fields
 from tortoise.expressions import Q
 from tortoise.fields import ForeignKeyRelation
 from tortoise.functions import Sum
 from tortoise.models import Model
-
 
 from app.models.cheese_status import CheeseStatus
 
@@ -80,15 +81,19 @@ class CheeseHistory(Model):
 
     @classmethod
     async def get_total_amount_by_manager(cls, manager_id: int) -> int:
-        result = await (
-            cls.filter(
-                Q(status=CheeseStatus.CAN_USE) | Q(status=CheeseStatus.USING),
-                cheese_manager_id=manager_id,
-            )
-            .annotate(total=Sum("current_amount"))
-            .values_list("total", flat=True)
+        result = cast(
+            list[int | None],
+            await (
+                cls.filter(
+                    Q(status=CheeseStatus.CAN_USE) | Q(status=CheeseStatus.USING),
+                    cheese_manager_id=manager_id,
+                )
+                .annotate(total=Sum("current_amount"))
+                .values_list("total", flat=True)
+            ),
         )
-        return int(result[0]) if result and result[0] is not None else 0
+
+        return result[0] if result and result[0] is not None else 0
 
     @classmethod
     async def get_using_cheeses(cls, manager_id: int) -> list["CheeseHistory"]:

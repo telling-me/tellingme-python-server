@@ -1,9 +1,8 @@
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, status
 
 from app.dtos.payment.payment_request import PaymentRequest
 from app.dtos.payment.payment_response import PaymentResponse, ProductDTO
 from app.services.payment_service import PaymentService
-from app.services.user_service import UserService
 
 payment_router = APIRouter(prefix="/payment", tags=["Payment"])
 

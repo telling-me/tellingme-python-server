@@ -1,38 +1,33 @@
-from fastapi import HTTPException
-
-from app.dtos.level.level_dto import LevelDTO, LevelInfoDTO
+from app.dtos.level.level_dto import LevelDTO
+from app.dtos.level.level_info_dto import LevelInfoDTO
 from app.models.level import Level
 from app.services.answer_service import AnswerService
 
 
 class LevelService:
     @classmethod
-    async def get_level_info(cls, user_id: str) -> LevelDTO:
-        level_data = await Level.get_level_info(user_id=user_id)
-        if level_data is None:
-            raise HTTPException(status_code=404, detail="Level info not found")
-        return LevelDTO.builder(level=level_data)
+    async def get_level(cls, user_id: str) -> LevelDTO:
+        level = await Level.get_level_info(user_id=user_id)
+        return LevelDTO(level=level.level_level, requiredExp=level.required_exp, currentExp=level.level_exp)
 
     @classmethod
     async def get_level_info_add_answer_days(cls, user_id: str) -> LevelInfoDTO:
-        level_dto = await cls.get_level_info(user_id=user_id)
-
-        if level_dto.requiredExp is None:
-            raise ValueError("Required experience cannot be None")
+        level_dto = await cls.get_level(user_id=user_id)
 
         needs_to_level_up = await cls.calculate_days_to_level_up(
             user_id=user_id,
             current_exp=level_dto.currentExp,
             required_exp=level_dto.requiredExp,
         )
-        return LevelInfoDTO.builder(
-            level_dto=await cls.get_level_info(user_id=user_id),
-            days_to_level_up=needs_to_level_up,
+
+        return LevelInfoDTO(
+            levelDto=await cls.get_level(user_id=user_id),
+            daysToLevelUp=needs_to_level_up,
         )
 
     @classmethod
     async def level_up(cls, user_id: str) -> int:
-        level_dto = await cls.get_level_info(user_id=user_id)
+        level_dto = await cls.get_level(user_id=user_id)
 
         level = level_dto.level
         current_exp = level_dto.currentExp
@@ -51,7 +46,7 @@ class LevelService:
 
     @classmethod
     async def add_exp(cls, user_id: str, exp: int) -> None:
-        level_dto = await cls.get_level_info(user_id=user_id)
+        level_dto = await cls.get_level(user_id=user_id)
 
         current_exp = level_dto.currentExp
         new_exp = current_exp + exp
