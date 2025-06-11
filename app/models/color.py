@@ -24,10 +24,10 @@ class Color(Model):
         table = "color"
 
     @classmethod
-    async def create_by_user_id(cls, user_id: str, color_code: str) -> Any:
+    async def create_by_user_id(cls, user_id: str, color_code: str) -> None:
         query = INSERT_COLOR_CODE_FOR_USER_QUERY
         values = (color_code, user_id)
-        return await QueryExecutor.execute_query(query, values=values, fetch_type="single")
+        await QueryExecutor.execute_query(query, values=values, fetch_type="single")
 
     @classmethod
     async def get_colors_with_details_by_user_id(cls, user_id: str) -> list[ColorData]:

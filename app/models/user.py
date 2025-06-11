@@ -91,7 +91,7 @@ class User(Model):
         return UserData(**result)
 
     @classmethod
-    async def set_is_premium(cls, user_id: str, is_premium: bool) -> Any:
+    async def set_is_premium(cls, user_id: str, is_premium: bool) -> None:
         query = UPDATE_PREMIUM_STATUS_QUERY
         current_time = datetime.now()
         values = (int(is_premium), current_time, user_id)

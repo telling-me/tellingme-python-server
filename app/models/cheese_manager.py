@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import cast
 
 from tortoise import fields
@@ -96,9 +98,9 @@ class CheeseHistory(Model):
         return result[0] if result and result[0] is not None else 0
 
     @classmethod
-    async def get_using_cheeses(cls, manager_id: int) -> list["CheeseHistory"]:
+    async def get_using_cheeses(cls, manager_id: int) -> list[CheeseHistory]:
         return await cls.filter(status=CheeseStatus.USING, cheese_manager_id=manager_id).order_by("cheese_history_id")
 
     @classmethod
-    async def get_can_use_cheeses(cls, manager_id: int) -> list["CheeseHistory"]:
+    async def get_can_use_cheeses(cls, manager_id: int) -> list[CheeseHistory]:
         return await cls.filter(status=CheeseStatus.CAN_USE, cheese_manager_id=manager_id).order_by("cheese_history_id")
