@@ -29,9 +29,3 @@ class Level(Model):
         query = UPDATE_USER_LEVEL_AND_EXP_QUERY
         values = (new_level, new_exp, user_id)
         await QueryExecutor.execute_query(query, values=values, fetch_type="single")
-
-
-class LevelInventory(Model):
-    level_inventory_id = fields.BigIntField(primary_key=True)
-    level = fields.IntField(null=True)
-    required_exp = fields.IntField(null=True)

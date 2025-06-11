@@ -10,7 +10,6 @@ from app.models.user import User
 from app.queries.color_query import (
     INSERT_COLOR_CODE_FOR_USER_QUERY,
     SELECT_COLOR_BY_USER_UUID_QUERY,
-    SELECT_COLOR_CODE_BY_USER_UUID_QUERY,
 )
 
 
@@ -23,12 +22,6 @@ class Color(Model):
 
     class Meta:
         table = "color"
-
-    @classmethod
-    async def get_color_codes_by_user_id(cls, user_id: str) -> Any:
-        query = SELECT_COLOR_CODE_BY_USER_UUID_QUERY
-        value = user_id
-        return await QueryExecutor.execute_query(query, values=value, fetch_type="multiple")
 
     @classmethod
     async def create_by_user_id(cls, user_id: str, color_code: str) -> Any:

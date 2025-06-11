@@ -1,5 +1,3 @@
-from typing import Optional
-
 from app.models.notice import Notice
 
 
@@ -12,7 +10,7 @@ class NoticeService:
         title: str,
         reward_type: str,
         content: str,
-        badge_code: Optional[str] = None,
+        badge_code: str | None = None,
     ) -> None:
         return await Notice.create_notice(
             title=title,
@@ -31,11 +29,11 @@ class NoticeService:
         reward_type: str,
         total_cheese: int = 0,
         total_exp: int = 0,
-        badge_full_name: Optional[str] = None,
-        badge_code: Optional[str] = None,
-        level_up: Optional[bool] = False,
-        nickname: Optional[str] = None,
-        new_level: Optional[int] = None,
+        badge_full_name: str | None = None,
+        badge_code: str | None = None,
+        level_up: bool = False,
+        nickname: str | None = None,
+        new_level: int | None = None,
     ) -> None:
         if not badge_code and not level_up and total_cheese == 0 and total_exp == 0:
             return
@@ -66,10 +64,10 @@ class NoticeService:
     @classmethod
     def create_title(
         cls,
-        badge_full_name: Optional[str] = None,
-        level_up: Optional[bool] = False,
-        nickname: Optional[str] = None,
-        new_level: Optional[int] = None,
+        level_up: bool = False,
+        badge_full_name: str | None = None,
+        nickname: str | None = None,
+        new_level: int | None = None,
     ) -> str:
         if level_up and nickname and new_level is not None:
             return f"{nickname} LV{new_level}로 레벨업!"
@@ -79,7 +77,7 @@ class NoticeService:
 
     @classmethod
     def create_reward_message(
-        cls, total_cheese: int, total_exp: int, badge_full_name: Optional[str] = None, level_up: Optional[bool] = False
+        cls, total_cheese: int, total_exp: int, badge_full_name: str | None = None, level_up: bool = False
     ) -> str:
         if level_up:
             return f"선물로 치즈 {total_cheese}개를 드릴게요!" if total_cheese > 0 else "레벨업을 축하드립니다!"

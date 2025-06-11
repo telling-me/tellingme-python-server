@@ -1,23 +1,27 @@
 import asyncio
 from datetime import datetime, timedelta, timezone
-from typing import Optional
 
-from fastapi import HTTPException
+from fastapi import HTTPException, status
 from tortoise.exceptions import DoesNotExist
 from tortoise.transactions import atomic
 
+from app.common.constants.item_category import ItemCategory
+from app.common.constants.mission_condition import MS
+from app.common.constants.reward_type import RewardType
 from app.core.configs import settings
 from app.dtos.mission.mission_dto import UserMissionDTO
 from app.dtos.mission.reward_dto import RewardDTO
+from app.models.answer import Answer
 from app.models.badge import Badge
+from app.models.badge_inventory import BadgeInventory
 from app.models.cheese_manager import CheeseManager
 from app.models.color import Color
 from app.models.item import ItemInventory, ItemInventoryRewardInventory, RewardInventory
 from app.models.like import Like
-from app.models.mission import MissionInventory, UserMission
+from app.models.mission import UserMission
+from app.models.mission_inventory import MissionInventory
 from app.models.user import User
 from app.services.answer_service import AnswerService
-from app.services.badge_service import BadgeService
 from app.services.level_service import LevelService
 from app.services.notice_service import NoticeService
 
@@ -25,8 +29,16 @@ from app.services.notice_service import NoticeService
 class MissionService:
     @staticmethod
     async def get_user_missions(user_id: str) -> list[UserMissionDTO]:
-        user_mission_raw = await UserMission.get_user_missions_by_condition_type(user_id)
-        return [UserMissionDTO.builder(user_mission) for user_mission in user_mission_raw]
+        user_missions = await UserMission.get_user_missions_by_condition_type(user_id)
+        return [
+            UserMissionDTO(
+                user_mission_id=user_mission.user_mission_id,
+                is_completed=user_mission.is_completed,
+                mission_code=user_mission.mission_code,
+                progress_count=user_mission.progress_count,
+            )
+            for user_mission in user_missions
+        ]
 
     @staticmethod
     async def _update_user_mission_progress(
@@ -51,7 +63,7 @@ class MissionService:
             MissionInventory.all(),
         )
 
-        cheese_manager_id: int = user.cheese_manager_id
+        cheese_manager_id = user.cheese_manager_id
         mission_dict = {mission.mission_code: mission for mission in missions}
 
         badge_missions, lv_up_mission, daily_missions = await self._classify_missions(user_missions)
@@ -63,14 +75,6 @@ class MissionService:
 
         if lv_up_mission[0]:
             await self._process_mission(lv_up_mission[0], mission_dict, cheese_manager_id, user_id)
-
-    async def _classify_missions(
-        self, user_missions: list[UserMissionDTO]
-    ) -> tuple[list[UserMissionDTO], list[UserMissionDTO], list[UserMissionDTO]]:
-        badge_missions = [mission for mission in user_missions if mission.mission_code.startswith("MS_BADGE")]
-        lv_up_mission = [mission for mission in user_missions if mission.mission_code == "MS_LV_UP"]
-        daily_missions = [mission for mission in user_missions if mission.mission_code.startswith("MS_DAILY")]
-        return badge_missions, lv_up_mission, daily_missions
 
     async def _process_mission(
         self,
@@ -109,13 +113,13 @@ class MissionService:
         reward_code: str,
         cheese_manager_id: int,
     ) -> None:
-        if mission_code == "MS_DAILY_POST_GENERAL":
+        if mission_code == MS.DAILY_POST_GENERAL:
             await self.reward_daily_post(user_id=user_id, cheese_manager_id=cheese_manager_id)
-        elif mission_code == "MS_LV_UP":
+        elif mission_code == MS.LV_UP:
             await self.reward_level_up_mission(
                 user_id=user_id, cheese_manager_id=cheese_manager_id, reward_code=reward_code
             )
-        elif mission_code.startswith("MS_BADGE"):
+        elif mission_code.startswith(MS.BADGE):
             await self.reward_badge_mission(
                 user_id=user_id, cheese_manager_id=cheese_manager_id, reward_code=reward_code
             )
@@ -127,33 +131,42 @@ class MissionService:
             )
 
     async def evaluate_mission_condition(self, user_id: str, mission_code: str) -> int:
-        if mission_code == "MS_BADGE_POST_FIRST" and await self.check_first_post(user_id):
+        if mission_code == MS.BADGE_POST_FIRST and await self.check_first_post(user_id):
             return 1
-        elif mission_code == "MS_BADGE_POST_280_CHAR" and await self.check_long_answer(user_id):
+        elif mission_code == MS.BADGE_POST_280_CHAR and await self.check_long_answer(user_id):
             return 1
-        elif mission_code == "MS_BADGE_POST_CONSECUTIVE_7" and await self.check_consecutive_days(user_id):
+        elif mission_code == MS.BADGE_POST_CONSECUTIVE_7 and await self.check_consecutive_days(user_id):
             return 1
-        elif mission_code == "MS_BADGE_POST_EARLY_3" and await self.check_early_morning_posts(user_id):
+        elif mission_code == MS.BADGE_POST_EARLY_3 and await self.check_early_morning_posts(user_id):
             return 1
-        elif mission_code == "MS_BADGE_CHEESE_TOTAL_50" and await self.check_cheese_total(user_id):
+        elif mission_code == MS.BADGE_CHEESE_TOTAL_50 and await self.check_cheese_total(user_id):
             return 1
-        elif mission_code == "MS_BADGE_CHRISTMAS" and await self.check_christmas_period():
+        elif mission_code == MS.BADGE_CHRISTMAS and await self.check_christmas_period():
             return 1
-        elif mission_code == "MS_DAILY_LIKE_3_PER_DAY" and await self.check_three_likes_different_posts(user_id):
+        elif mission_code == MS.DAILY_LIKE_3_PER_DAY and await self.check_three_likes_different_posts(user_id):
             return 1
-        elif mission_code == "MS_LV_UP" and await LevelService.level_up(user_id=user_id):
+        elif mission_code == MS.DAILY_POST_GENERAL and await self.check_daily_post(user_id):
             return 1
-        elif mission_code == "MS_DAILY_POST_GENERAL" and await self.check_daily_post(user_id):
+        elif mission_code == MS.LV_UP and await LevelService.level_up(user_id=user_id):
             return 1
         return 0
 
     @staticmethod
+    async def _classify_missions(
+        user_missions: list[UserMissionDTO],
+    ) -> tuple[list[UserMissionDTO], list[UserMissionDTO], list[UserMissionDTO]]:
+        badge_missions = [mission for mission in user_missions if mission.mission_code.startswith(MS.BADGE)]
+        lv_up_mission = [mission for mission in user_missions if mission.mission_code == MS.LV_UP]
+        daily_missions = [mission for mission in user_missions if mission.mission_code.startswith(MS.DAILY)]
+        return badge_missions, lv_up_mission, daily_missions
+
+    @staticmethod
     async def check_first_post(user_id: str) -> bool:
-        return await AnswerService.get_answer_count_v2(user_id=user_id) > 0
+        return await Answer.get_answer_count_by_user_id_v2(user_id=user_id) > 0
 
     @staticmethod
     async def get_answer_count(user_id: str) -> int:
-        return await AnswerService.get_answer_count_v2(user_id=user_id)
+        return await Answer.get_answer_count_by_user_id_v2(user_id=user_id)
 
     @staticmethod
     async def check_post_count_range(answer_count: int, min_count: int, max_count: int) -> bool:
@@ -161,8 +174,8 @@ class MissionService:
 
     @staticmethod
     async def check_long_answer(user_id: str) -> bool:
-        recent_answer = await AnswerService.get_most_recent_answer(user_id=user_id)
-        return len(recent_answer["content"]) >= 280 if recent_answer else False
+        recent_answer = await Answer.get_most_recent_answer_by_user_id(user_id=user_id)
+        return len(recent_answer.content) >= 280 if recent_answer else False
 
     @staticmethod
     async def check_consecutive_days(user_id: str) -> bool:
@@ -171,11 +184,8 @@ class MissionService:
 
     @staticmethod
     async def check_early_morning_posts(user_id: str) -> bool:
-        recent_answer = await AnswerService.get_most_recent_answer(user_id=user_id)
-        if recent_answer:
-            answer_time = recent_answer.get("created_time")
-            return 0 <= answer_time.hour <= 5 if isinstance(answer_time, datetime) else False
-        return False
+        recent_answer = await Answer.get_most_recent_answer_by_user_id(user_id=user_id)
+        return 0 <= recent_answer.created_time.hour <= 5 if recent_answer else False
 
     @staticmethod
     async def check_cheese_total(user_id: str) -> bool:
@@ -196,20 +206,15 @@ class MissionService:
 
     @staticmethod
     async def check_three_likes_different_posts(user_id: str) -> bool:
-        like_raw = await Like.get_unique_likes_today(user_id)
-        like_count: int = like_raw.get("unique_likes", 0)
+        like_count = await Like.get_unique_likes_today(user_id)
         return like_count >= 3
 
     @staticmethod
     async def check_daily_post(user_id: str) -> bool:
         now = datetime.now(settings.db_zoneinfo)
-
         current_date = (now - timedelta(days=1)).date() if now.hour < 6 else now.date()
-
-        answer = await AnswerService.get_most_recent_answer(user_id=user_id)
-        answer_date = answer.get("date")
-
-        return answer_date == current_date  # type: ignore
+        answer = await Answer.get_most_recent_answer_by_user_id(user_id=user_id)
+        return answer.date == current_date if answer else False
 
     @staticmethod
     async def validate_reward(reward_code: str):  # type: ignore
@@ -217,14 +222,14 @@ class MissionService:
             reward = await RewardInventory.filter(reward_code=reward_code).prefetch_related("item_inventories").first()
 
             if not reward:
-                raise HTTPException(status_code=404, detail="Reward not found.")
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Reward not found.")
 
             item_inventory_rewards = reward.item_inventories
 
             return item_inventory_rewards
 
         except DoesNotExist:
-            raise HTTPException(status_code=404, detail="Reward not found.")
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Reward not found.")
 
     async def process_reward(
         self,
@@ -240,19 +245,19 @@ class MissionService:
             item: ItemInventory = await item_inventory_reward.item_inventory
             quantity = item_inventory_reward.quantity
 
-            if item.item_category == "BADGE":
+            if item.item_category == ItemCategory.BADGE:
                 for _ in range(quantity):
                     await Badge.create_by_user_id(user_id=user_id, badge_code=item.item_code)
-                    badge = await BadgeService.get_badge_info_by_badge_code(badge_code=item.item_code)
+                    badge = await BadgeInventory.get_by_badge_code(badge_code=item.item_code)
                     badge_info.append(badge)
 
-            elif item.item_category == "COLOR":
+            elif item.item_category == ItemCategory.COLOR:
                 for _ in range(quantity):
                     await Color.create_by_user_id(user_id=user_id, color_code=item.item_code)
-            elif item.item_category == "CHEESE":
+            elif item.item_category == ItemCategory.CHEESE:
                 total_cheese += quantity
                 await CheeseManager.add_cheese(cheese_manager_id=cheese_manager_id, amount=quantity)
-            elif item.item_category == "POINT":
+            elif item.item_category == ItemCategory.POINT:
                 total_exp += quantity
                 await LevelService.add_exp(user_id=user_id, exp=quantity)
             else:
@@ -261,8 +266,11 @@ class MissionService:
         badge_full_name = badge_info[0].badge_full_name if badge_info else None
         badge_code = badge_info[0].badge_code if badge_info else None
 
-        return await RewardDTO.build(
-            total_cheese=total_cheese, total_exp=total_exp, badge_full_name=badge_full_name, badge_code=badge_code
+        return RewardDTO(
+            total_cheese=total_cheese,
+            total_exp=total_exp,
+            badge_full_name=badge_full_name,
+            badge_code=badge_code,
         )
 
     async def reward_daily_post(self, user_id: str, cheese_manager_id: int) -> None:
@@ -275,7 +283,7 @@ class MissionService:
         # 3. 보상 알림 생성
         await self._create_reward_notice(
             user_id=user_id,
-            reward_type="DAILY_MISSION",
+            reward_type=RewardType.DAILY_MISSION,
             total_exp=exp,
             total_cheese=cheese,
         )
@@ -335,11 +343,11 @@ class MissionService:
         reward_type: str,
         total_exp: int,
         total_cheese: int,
-        badge_full_name: Optional[str] = None,
-        badge_code: Optional[str] = None,
-        level_up: Optional[bool] = False,
-        nickname: Optional[str] = None,
-        new_level: Optional[int] = None,
+        badge_full_name: str | None = None,
+        badge_code: str | None = None,
+        level_up: bool = False,
+        nickname: str | None = None,
+        new_level: int | None = None,
     ) -> None:
         await NoticeService.create_reward_notice(
             user_id=user_id,
@@ -368,7 +376,7 @@ class MissionService:
 
         await self._create_reward_notice(
             user_id=user_id,
-            reward_type="LEVEL_UP",
+            reward_type=RewardType.LEVEL_UP,
             total_exp=reward_dto.total_exp,
             total_cheese=reward_dto.total_cheese,
             level_up=True,
@@ -385,7 +393,7 @@ class MissionService:
         )
         await self._create_reward_notice(
             user_id=user_id,
-            reward_type="BADGE_MISSION",
+            reward_type=RewardType.BADGE_MISSION,
             total_exp=reward_dto.total_exp,
             total_cheese=reward_dto.total_cheese,
             badge_code=reward_dto.badge_code,
@@ -401,7 +409,7 @@ class MissionService:
         )
         await self._create_reward_notice(
             user_id=user_id,
-            reward_type="DAILY_MISSION",
+            reward_type=RewardType.DAILY_MISSION,
             total_exp=reward_dto.total_exp,
             total_cheese=reward_dto.total_cheese,
         )

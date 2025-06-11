@@ -1,5 +1,5 @@
 from app.dtos.teller_card.teller_card_dto import TellerCardDTO
-from app.models.badge import BadgeInventory
+from app.models.badge_inventory import BadgeInventory
 from app.models.color_inventory import ColorInventory
 from app.models.teller_card import TellerCard
 

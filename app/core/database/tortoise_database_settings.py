@@ -5,21 +5,23 @@ from tortoise.contrib.fastapi import register_tortoise
 from app.core.configs import settings
 
 TORTOISE_APP_MODELS = [
-    "app.models.question",
     "app.models.user",
     "app.models.refresh_token",
     "app.models.badge",
+    "app.models.badge_inventory",
     "app.models.color",
     "app.models.color_inventory",
+    "app.models.emotion",
+    "app.models.emotion_inventory",
     "app.models.answer",
     "app.models.teller_card",
     "app.models.level",
+    "app.models.level_inventory",
     "app.models.cheese_manager",
     "app.models.item",
     "app.models.mission",
+    "app.models.mission_inventory",
     "app.models.like",
-    "app.models.emotion",
-    "app.models.purchase_history",
 ]
 
 TORTOISE_ORM = {

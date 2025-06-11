@@ -18,10 +18,10 @@ class TellerCard(Model):
         table = "teller_card"
 
     @classmethod
-    async def get_teller_card_info_by_user_id(cls, user_id: str) -> TellerCardData:  # type ignore
+    async def get_teller_card_info_by_user_id(cls, user_id: str) -> TellerCardData:
         query = SELECT_TELLER_CARD_INFO_BY_USER_UUID_QUERY
         value = user_id
-        result = await QueryExecutor.execute_query(query, values=value, fetch_type="single")  # type ignore
+        result = await QueryExecutor.execute_query(query, values=value, fetch_type="single")
         return TellerCardData(**result)
 
     @classmethod

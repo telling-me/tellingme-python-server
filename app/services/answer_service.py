@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-from typing import Any
 
 from app.core.configs import settings
 from app.models.answer import Answer
@@ -11,20 +10,7 @@ class AnswerService:
         """
         과거부터 현재까지 총 답변 수
         """
-        answer_count_raw = await Answer.get_answer_count_by_user_id(user_id=user_id)
-        if answer_count_raw is None:
-            return 0
-        return int(answer_count_raw.get("answer_count", 0))
-
-    @classmethod
-    async def get_answer_count_v2(cls, user_id: str) -> int:
-        """
-        v2 이후 총 답변 수
-        """
-        answer_count_raw = await Answer.get_answer_count_by_user_id_v2(user_id=user_id)
-        if answer_count_raw is None:
-            return 0
-        return int(answer_count_raw.get("answer_count", 0))
+        return await Answer.get_answer_count_by_user_id(user_id=user_id)
 
     @classmethod
     async def get_answer_record(cls, user_id: str) -> int:
@@ -56,10 +42,3 @@ class AnswerService:
     @classmethod
     async def calculate_consecutive_answer_points(cls, user_id: str) -> int:
         return min(await cls.get_answer_record(user_id=user_id), 10)
-
-    @classmethod
-    async def get_most_recent_answer(cls, user_id: str) -> Any:
-        answer = await Answer.get_most_recent_answer_by_user_id(user_id=user_id)
-        if answer == 0:
-            return {}
-        return answer

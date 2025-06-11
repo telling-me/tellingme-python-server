@@ -1,5 +1,3 @@
-from typing import Any
-
 from tortoise import fields
 from tortoise.fields import ForeignKeyRelation
 from tortoise.models import Model
@@ -31,7 +29,8 @@ class Like(Model):
         ]
 
     @staticmethod
-    async def get_unique_likes_today(user_id: str) -> Any:
+    async def get_unique_likes_today(user_id: str) -> int:
         query = SELECT_UNIQUE_LIKES_COUNT_BY_USER_TODAY_QUERY
-        values = (user_id,)
-        return await QueryExecutor.execute_query(query, values=values, fetch_type="single")
+        value = user_id
+        result = await QueryExecutor.execute_query(query, values=value, fetch_type="single")
+        return int(result.get("unique_likes", 0) if result else 0)

@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import Any
 
 from tortoise import fields
 from tortoise.fields import ForeignKeyRelation
@@ -42,16 +41,18 @@ class Answer(Model):
 
     # 기존 get_answer_count_by_user_id 메서드
     @classmethod
-    async def get_answer_count_by_user_id(cls, user_id: str) -> Any:
+    async def get_answer_count_by_user_id(cls, user_id: str) -> int:
         query = SELECT_ANSWER_COUNT_BY_USER_UUID_QUERY
         value = user_id
-        return await QueryExecutor.execute_query(query, values=value, fetch_type="single")
+        result = await QueryExecutor.execute_query(query, values=value, fetch_type="single")
+        return int(result.get("answer_count", 0) if result else 0)
 
     @classmethod
-    async def get_answer_count_by_user_id_v2(cls, user_id: str) -> Any:
+    async def get_answer_count_by_user_id_v2(cls, user_id: str) -> int:
         query = SELECT_ANSWER_COUNT_BY_USER_UUID_QUERY_V2
         value = user_id
-        return await QueryExecutor.execute_query(query, values=value, fetch_type="single")
+        result = await QueryExecutor.execute_query(query, values=value, fetch_type="single")
+        return int(result.get("answer_count", 0) if result else 0)
 
     @classmethod
     async def get_all_by_user_id(cls, user_id: str, start_date: datetime, end_date: datetime) -> list[AnswerData]:
@@ -61,7 +62,8 @@ class Answer(Model):
         return [AnswerData(**row) for row in results]
 
     @classmethod
-    async def get_most_recent_answer_by_user_id(cls, user_id: str) -> Any:
+    async def get_most_recent_answer_by_user_id(cls, user_id: str) -> AnswerData | None:
         query = SELECT_MOST_RECENT_ANSWER_BY_USER_UUID_QUERY
         value = user_id
-        return await QueryExecutor.execute_query(query, values=value, fetch_type="single")
+        result = await QueryExecutor.execute_query(query, values=value, fetch_type="single")
+        return AnswerData(**result) if result else None

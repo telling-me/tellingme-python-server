@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from pydantic import BaseModel
 
 from app.dtos.frozen_config import FROZEN_CONFIG

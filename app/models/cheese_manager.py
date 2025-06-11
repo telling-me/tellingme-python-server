@@ -6,7 +6,7 @@ from tortoise.fields import ForeignKeyRelation
 from tortoise.functions import Sum
 from tortoise.models import Model
 
-from app.models.cheese_status import CheeseStatus
+from app.common.constants.cheese_status import CheeseStatus
 
 
 class CheeseManager(Model):

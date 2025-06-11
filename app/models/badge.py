@@ -1,4 +1,4 @@
-from typing import Any
+from __future__ import annotations
 
 from tortoise import fields
 from tortoise.fields import ForeignKeyRelation
@@ -10,7 +10,6 @@ from app.models.user import User
 from app.queries.badge_query import (
     INSERT_BADGE_CODE_FOR_USER_QUERY,
     SELECT_BADGE_BY_USER_UUID_QUERY,
-    SELECT_BADGE_CODE_BY_USER_UUID_QUERY,
     SELECT_BADGE_COUNT_BY_USER_UUID_QUERY,
 )
 
@@ -24,10 +23,11 @@ class Badge(Model):
         table = "badge"
 
     @classmethod
-    async def get_badge_count_by_user_id(cls, user_id: str) -> Any:
+    async def get_badge_count_by_user_id(cls, user_id: str) -> int:
         query = SELECT_BADGE_COUNT_BY_USER_UUID_QUERY
         value = user_id
-        return await QueryExecutor.execute_query(query, values=value, fetch_type="single")
+        result = await QueryExecutor.execute_query(query, values=value, fetch_type="single")
+        return int(result.get("badge_count", 0) if result else 0)
 
     @classmethod
     async def get_badges_with_details_by_user_id(cls, user_id: str) -> list[BadgeData]:
@@ -37,27 +37,7 @@ class Badge(Model):
         return [BadgeData(**row) for row in result]
 
     @classmethod
-    async def get_badge_codes_by_user_id(cls, user_id: str) -> Any:
-        query = SELECT_BADGE_CODE_BY_USER_UUID_QUERY
-        value = user_id
-        return await QueryExecutor.execute_query(query, values=value, fetch_type="multiple")
-
-    @classmethod
     async def create_by_user_id(cls, user_id: str, badge_code: str) -> None:
         query = INSERT_BADGE_CODE_FOR_USER_QUERY
         values = (badge_code, user_id)
         await QueryExecutor.execute_query(query, values=values)
-
-
-class BadgeInventory(Model):
-    badge_code = fields.CharField(max_length=255, primary_key=True)
-    badge_name = fields.CharField(max_length=255, null=True)
-    badge_condition = fields.CharField(max_length=255, null=True)
-    badge_middle_name = fields.CharField(max_length=255, null=True)
-
-    class Meta:
-        table = "badge_inventory"
-
-    @property
-    def badge_full_name(self) -> str:
-        return f"{self.badge_middle_name} {self.badge_name}"

@@ -1,5 +1,6 @@
 from app.dtos.level.level_dto import LevelDTO
 from app.dtos.level.level_info_dto import LevelInfoDTO
+from app.models.answer import Answer
 from app.models.level import Level
 from app.services.answer_service import AnswerService
 
@@ -58,7 +59,7 @@ class LevelService:
         remaining_exp = required_exp - current_exp
         days_needed = 0
 
-        answer_count = await AnswerService.get_answer_count_v2(user_id=user_id) + 1
+        answer_count = await Answer.get_answer_count_by_user_id_v2(user_id=user_id) + 1
         bonus_points = await AnswerService.calculate_consecutive_answer_points(user_id=user_id)
 
         while remaining_exp > 0:
