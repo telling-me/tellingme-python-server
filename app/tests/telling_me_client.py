@@ -45,6 +45,18 @@ class TellingMeClient:
             },
         )
 
+    async def get_emotions(self, user_id: str) -> httpx.Response:
+        return await self._client.get(
+            "/api/v2/user/emotion",
+            params={
+                key: value
+                for key, value in {
+                    "user_id": user_id,
+                }.items()
+                if value is not None
+            },
+        )
+
     # async def create_product(self, token: str, create_product_request: CreateProductRequest) -> httpx.Response:
     #     return await self._client.post(
     #         "/v1/products/admin", json=create_product_request.model_dump(), headers={"Authorization": f"Bearer {token}"}

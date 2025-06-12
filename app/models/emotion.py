@@ -31,14 +31,14 @@ class Emotion(models.Model):
         await QueryExecutor.execute_write_query(query, tuple(values))
 
     @classmethod
+    async def create_by_user_id(cls, user_id: str, emotion_code: str) -> None:
+        query = INSERT_EMOTION_CODE_FOR_USER_QUERY
+        values = (emotion_code, user_id)
+        await QueryExecutor.execute_query(query, values=values)
+
+    @classmethod
     async def get_emotions_with_details_by_user_id(cls, user_id: str) -> list[EmotionData]:
         query = SELECT_EMOTION_CODE_BY_USER_UUID_QUERY
         values = user_id
         result = await QueryExecutor.execute_query(query, values=values, fetch_type="multiple")
         return [EmotionData(**row) for row in result]
-
-    @classmethod
-    async def create_by_user_id(cls, user_id: str, emotion_code: str) -> None:
-        query = INSERT_EMOTION_CODE_FOR_USER_QUERY
-        values = (emotion_code, user_id)
-        await QueryExecutor.execute_query(query, values=values)

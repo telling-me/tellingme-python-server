@@ -128,7 +128,6 @@ class User(Model):
         query = SELECT_USER_PROFILE_BY_USER_ID_QUERY
         value = user_id
         result = await QueryExecutor.execute_query(query, values=value, fetch_type="single")
-        print(result)
         return UserProfileData(
             user_id=result.get("user_id", ""),
             nickname=result.get("nickname", ""),
