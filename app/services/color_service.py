@@ -7,6 +7,14 @@ from app.models.user import User
 class ColorService:
 
     @classmethod
+    async def create_color(cls, user_id: str, color_code: str) -> None:
+        await Color.create_by_user_id(user_id=user_id, color_code=color_code)
+
+    @classmethod
+    async def create_color_inventory(cls) -> None:
+        await ColorInventory.create_bulk()
+
+    @classmethod
     async def get_colors_with_details_by_user_id(cls, user_id: str) -> list[ColorDTO]:
         user = await User.get_user_profile_by_user_id(user_id=user_id)
 

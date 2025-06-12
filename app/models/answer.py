@@ -15,6 +15,7 @@ from app.queries.answer_query import (
 
 class Answer(Model):
     answer_id = fields.BigIntField(primary_key=True)
+    user_id = fields.BinaryField(max_length=16, null=True)
     content = fields.TextField(null=False)
     created_time = fields.DatetimeField(null=True)
     date = fields.DateField(null=False)

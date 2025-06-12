@@ -23,7 +23,7 @@ from app.queries.user_query import (
 class User(Model):
     id = fields.BigIntField(primary_key=True)  # Auto Increment Primary Key
     user_id = fields.BinaryField(max_length=16, description="UUID PK in binary form")
-    allow_notification = fields.BooleanField(null=True)
+    allow_notification = fields.BinaryField(null=True)
     birth_date = fields.CharField(max_length=8, null=True)
     created_time = fields.DatetimeField(auto_now_add=True)
     gender = fields.CharField(max_length=16, null=True)
@@ -34,7 +34,7 @@ class User(Model):
     push_token = fields.CharField(max_length=255, null=True)
     social_id = fields.CharField(max_length=255)
     social_login_type = fields.CharField(max_length=16)
-    user_status = fields.BooleanField()
+    user_status = fields.BinaryField()
     withdraw_period = fields.DatetimeField(null=True)
     refresh_token: Optional[ForeignKeyRelation[RefreshToken]] = fields.ForeignKeyField(
         "models.RefreshToken",
@@ -42,7 +42,7 @@ class User(Model):
         db_column="refresh_token_id",
         null=True,
     )
-    is_premium = fields.BooleanField()
+    is_premium = fields.BinaryField()
     profile_url = fields.CharField(
         max_length=255,
         default="https://miro.medium.com/v2/resize:fit:1400/format:webp/1*dh7Xy5tFvRj7n2wf1UweAw.png",
@@ -66,7 +66,7 @@ class User(Model):
         cheese_manager_id: int,
         teller_card_id: int,
         level_id: int,
-        allow_notification: bool = True,
+        allow_notification: bool = False,
         birth_date: str | None = None,
         gender: str = "female",
         mbti: str | None = None,
@@ -78,6 +78,9 @@ class User(Model):
 
         user_id = str(uuid.uuid4())
         created_time = datetime.now(settings.db_zoneinfo).strftime("%Y-%m-%d %H:%M:%S")
+        allow_notification_byte = b"\x01" if allow_notification else b"\x00"
+        is_premium_byte = b"\x01" if is_premium else b"\x00"
+        user_status_byte = b"\x01"  # 항상 TRUE로 설정한 부분
 
         query = """
                 INSERT INTO user (
@@ -90,7 +93,7 @@ class User(Model):
                     UNHEX(REPLACE(%s, '-', '')), %s, %s, %s, %s, %s,
                     %s, %s, %s,
                     %s, %s, %s, %s,
-                    %s, %s, %s, %s, TRUE, %s
+                    %s, %s, %s, %s, %s, %s
                 );
                 """
 
@@ -106,14 +109,15 @@ class User(Model):
                 cheese_manager_id,
                 teller_card_id,
                 level_id,
-                allow_notification,
+                allow_notification_byte,
                 birth_date,
                 gender,
                 mbti,
                 push_token,
                 refresh_token,
-                is_premium,
+                is_premium_byte,
                 profile_url,
+                user_status_byte,
                 created_time,
             ),
         )
@@ -124,6 +128,7 @@ class User(Model):
         query = SELECT_USER_PROFILE_BY_USER_ID_QUERY
         value = user_id
         result = await QueryExecutor.execute_query(query, values=value, fetch_type="single")
+        print(result)
         return UserProfileData(
             user_id=result.get("user_id", ""),
             nickname=result.get("nickname", ""),

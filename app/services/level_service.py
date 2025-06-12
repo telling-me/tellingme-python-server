@@ -2,10 +2,15 @@ from app.dtos.level.level_dto import LevelDTO
 from app.dtos.level.level_info_dto import LevelInfoDTO
 from app.models.answer import Answer
 from app.models.level import Level
+from app.models.level_inventory import LevelInventory
 from app.services.answer_service import AnswerService
 
 
 class LevelService:
+    @classmethod
+    async def create_level_inventory(cls) -> None:
+        await LevelInventory.create_bulk()
+
     @classmethod
     async def get_level(cls, user_id: str) -> LevelDTO:
         level = await Level.get_level_info(user_id=user_id)

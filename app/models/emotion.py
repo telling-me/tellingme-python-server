@@ -10,7 +10,7 @@ from app.queries.emotion_query import (
 
 class Emotion(models.Model):
     emotion_id = fields.BigIntField(primary_key=True)
-    emotion_code = fields.CharField(max_length=255, unique=True)
+    emotion_code = fields.CharField(max_length=255)
     user_id = fields.BinaryField(max_length=16, null=True)
 
     class Meta:

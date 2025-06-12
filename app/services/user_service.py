@@ -12,7 +12,7 @@ from app.models.user import User
 class UserService:
 
     @staticmethod
-    async def create_user() -> str:
+    async def create_user(is_premium: bool = False) -> str:
         cheese_manager = await CheeseManager.create_cheese_manager()
         teller_card = await TellerCard.create(activate_badge_code="BG_NEW", activate_color_code="CL_DEFAULT")
         level = await Level.create(user_exp=0, user_level=1)
@@ -25,6 +25,7 @@ class UserService:
             cheese_manager_id=cheese_manager.cheese_manager_id,
             teller_card_id=teller_card.teller_card_id,
             level_id=level.level_id,
+            is_premium=is_premium,
         )
         await Color.create_default_by_user_id(user_id=user_id)
         await Emotion.create_default_emotions_by_user_id(user_id=user_id)
