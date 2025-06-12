@@ -1,32 +1,18 @@
-from typing import Any, AsyncGenerator
+from typing import AsyncGenerator
 from unittest.mock import Mock, patch
 
 import httpx
 import pytest
 from _pytest.fixtures import FixtureRequest
 from tortoise import Tortoise
-from tortoise.backends.base.config_generator import generate_config
 from tortoise.contrib.test import finalizer, initializer
 
 from app import app
 from app.core.configs import settings
 from app.core.database.tortoise_database_settings import TORTOISE_APP_MODELS
 from app.tests.telling_me_client import TellingMeClient
-
-TEST_BASE_URL = "http://test"
-TEST_DB_LABEL = "models"
-TEST_DB_TZ = "Asia/Seoul"
-
-
-def get_test_db_config() -> dict[Any, Any]:
-    config = generate_config(
-        db_url=f"mysql://{settings.DB_USER}:{settings.DB_PASSWORD}@{settings.DB_HOST}:{settings.DB_PORT}/test",
-        app_modules={TEST_DB_LABEL: TORTOISE_APP_MODELS},
-        connection_label=TEST_DB_LABEL,
-        testing=True,
-    )
-    config["timezone"] = TEST_DB_TZ
-    return config
+from app.tests.utils.db_utils import reset_inventory_tables
+from app.tests.utils.test_db_config import TEST_BASE_URL, get_test_db_config
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -47,6 +33,7 @@ async def init_tortoise_connection() -> AsyncGenerator[None, None]:
         db_url=f"mysql://{settings.DB_USER}:{settings.DB_PASSWORD}@{settings.DB_HOST}:{settings.DB_PORT}/test",
         modules={"models": TORTOISE_APP_MODELS},
     )
+    await reset_inventory_tables()
     yield
     await Tortoise.close_connections()
 
