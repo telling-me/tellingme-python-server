@@ -14,10 +14,10 @@ class Env(StrEnum):
 class Settings(BaseSettings):
     ENV: Env = Env.LOCAL
     DB_HOST: str = "localhost"
-    DB_PORT: int = 3306
+    DB_PORT: int = 3307
     DB_USER: str = "root"
     DB_PASSWORD: str = "password"
-    DB_NAME: str = "database_name"
+    DB_NAME: str = "tellingme_local"
     DB_TIMEZONE: str = "Asia/Seoul"
     DB_CHARSET: str = "utf8mb4"
     APPLE_URL: str = "https://sandbox.itunes.apple.com/verifyReceipt"

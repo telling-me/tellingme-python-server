@@ -19,6 +19,7 @@ class QueryExecutor:
         :param fetch_type: "single"일 경우 단일 값을 반환하고, "multiple"일 경우 여러 값을 반환
         :return: 단일 값 또는 여러 값(딕셔너리 리스트)
         """
+
         connection = Tortoise.get_connection("default")
 
         if isinstance(values, tuple):

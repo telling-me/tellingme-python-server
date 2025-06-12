@@ -1,5 +1,3 @@
-from typing import Any
-
 from tortoise import fields
 from tortoise.fields import ForeignKeyRelation
 from tortoise.models import Model

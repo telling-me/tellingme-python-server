@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime
-from typing import Any, Optional
+from typing import Optional
 
 from tortoise import Tortoise, fields
 from tortoise.fields import ForeignKeyRelation
