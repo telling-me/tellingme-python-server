@@ -1,5 +1,7 @@
 import httpx
 
+from app.dtos.teller_card.teller_card_request import TellerCardRequest
+
 
 class TellingMeClient:
     def __init__(self, httpx_client: httpx.AsyncClient):
@@ -12,6 +14,18 @@ class TellingMeClient:
     async def get_mobile_my_page(self, user_id: str) -> httpx.Response:
         return await self._client.get(
             "/api/v2/mobiles/mypage",
+            params={
+                key: value
+                for key, value in {
+                    "user_id": user_id,
+                }.items()
+                if value is not None
+            },
+        )
+
+    async def get_mobile_teller_card(self, user_id: str) -> httpx.Response:
+        return await self._client.get(
+            "/api/v2/mobiles/tellercard",
             params={
                 key: value
                 for key, value in {
@@ -69,7 +83,5 @@ class TellingMeClient:
             },
         )
 
-    # async def create_product(self, token: str, create_product_request: CreateProductRequest) -> httpx.Response:
-    #     return await self._client.post(
-    #         "/v1/products/admin", json=create_product_request.model_dump(), headers={"Authorization": f"Bearer {token}"}
-    #     )
+    async def update_teller_card(self, teller_card_request: TellerCardRequest) -> httpx.Response:
+        return await self._client.post("/api/v2/tellercard", json=teller_card_request.model_dump())

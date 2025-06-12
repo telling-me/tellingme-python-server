@@ -1,6 +1,7 @@
 from app.models.badge_inventory import BadgeInventory
 from app.models.color_inventory import ColorInventory
 from app.models.emotion_inventory import EmotionInventory
+from app.models.level_inventory import LevelInventory
 
 
 async def reset_inventory_tables() -> None:
@@ -11,3 +12,4 @@ async def reset_inventory_tables() -> None:
     await BadgeInventory.all().delete()
     await ColorInventory.all().delete()
     await EmotionInventory.all().delete()
+    await LevelInventory.all().delete()

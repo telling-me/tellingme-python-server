@@ -2,10 +2,13 @@ from enum import Enum
 
 
 class ErrorCode(Enum):
+    # 400 Bad Request
+    INVALID_TRANSACTION_CURRENCY = (4001, "결제에 유효하지 않은 거래 통화입니다.")
     NOT_ENOUGH_CHEESE = (4003, "치즈가 부족하여 구매를 진행할 수 없습니다.")
     INVALID_ITEM_CATEGORY = (4004, "치즈 결제에 유효하지 않은 아이템 카테고리입니다.")
-    INVALID_TRANSACTION_CURRENCY = (4001, "결제에 유효하지 않은 거래 통화입니다.")
     DUPLICATE_PURCHASE = (4005, "이미 소유한 제품입니다.")
+    INVALID_BADGE_CODE = (4006, "유효하지 않은 뱃지 코드입니다")
+    INVALID_COLOR_CODE = (4006, "유효하지 않은 컬러 코드입니다")
 
     # 404 Not Found
     NO_INVENTORY_FOR_PRODUCT = (4041, "이 상품에 대한 재고가 없습니다.")

@@ -1,3 +1,6 @@
+
+from app.common.exceptions.custom_exception import CustomException
+from app.common.exceptions.error_code import ErrorCode
 from app.dtos.teller_card.teller_card_dto import TellerCardDTO
 from app.models.badge_inventory import BadgeInventory
 from app.models.color_inventory import ColorInventory
@@ -35,7 +38,6 @@ class TellerCardService:
         color_codes = [color["color_code"] for color in color_code_list]
 
         if badge_code and badge_code not in badge_codes:
-            raise ValueError("Invalid badge code")
-
+            raise CustomException(ErrorCode.INVALID_BADGE_CODE)
         if color_code and color_code not in color_codes:
-            raise ValueError("Invalid color code")
+            raise CustomException(ErrorCode.INVALID_COLOR_CODE)
