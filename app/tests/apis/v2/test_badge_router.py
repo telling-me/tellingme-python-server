@@ -1,3 +1,5 @@
+import asyncio
+
 from fastapi import status
 
 from app.common.constants.badge_code_list import BadgeCodeList
@@ -12,8 +14,9 @@ async def test_get_badges(telling_me_client: TellingMeClient, init_tortoise_conn
     badge_mother = BadgeMother()
 
     user_id = await user_mother.create_user()
-    await badge_mother.create_badge_inventory()
-    await badge_mother.create_badge(user_id=user_id, badge_code=BadgeCodeList.NEW)
+    await asyncio.gather(
+        badge_mother.create_badge_inventory(), badge_mother.create_badge(user_id=user_id, badge_code=BadgeCodeList.NEW)
+    )
 
     # When
     response = await telling_me_client.get_badges(user_id=user_id)

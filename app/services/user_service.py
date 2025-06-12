@@ -12,14 +12,14 @@ from app.models.user import User
 class UserService:
 
     @staticmethod
-    async def create_user(is_premium: bool = False) -> str:
+    async def create_user(user_name: str, is_premium: bool = False) -> str:
         cheese_manager = await CheeseManager.create_cheese_manager()
         teller_card = await TellerCard.create(activate_badge_code="BG_NEW", activate_color_code="CL_DEFAULT")
         level = await Level.create(user_exp=0, user_level=1)
         user_id = await User.create_user(
             social_id="kakao_456",
             social_login_type="kakao",
-            nickname="test_user",
+            nickname=user_name,
             purpose="test",
             job=1,
             cheese_manager_id=cheese_manager.cheese_manager_id,
@@ -39,7 +39,3 @@ class UserService:
     @classmethod
     async def get_user_profile(cls, user_id: str) -> UserProfileData:
         return await User.get_user_profile_by_user_id(user_id=user_id)
-
-    @staticmethod
-    async def set_is_premium(user_id: str, is_premium: bool) -> None:
-        await User.set_is_premium(user_id=user_id, is_premium=is_premium)

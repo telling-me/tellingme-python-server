@@ -7,10 +7,11 @@ class UserMother:
 
     @staticmethod
     async def create_user(
+        user_name: str = "test_user",
         is_premium: bool = False,
     ) -> str:
         user_service = UserService()
-        new_user_id = await user_service.create_user(is_premium=is_premium)
+        new_user_id = await user_service.create_user(user_name=user_name, is_premium=is_premium)
         return new_user_id
 
     @staticmethod

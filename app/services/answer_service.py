@@ -5,6 +5,20 @@ from app.models.answer import Answer
 
 
 class AnswerService:
+
+    @classmethod
+    async def create_answer(
+        cls,
+        user_id: str,
+        content: str,
+        date: str,
+    ) -> None:
+        await Answer.create_answer(
+            user_id=user_id,
+            content=content,
+            date=date,
+        )
+
     @classmethod
     async def get_answer_count(cls, user_id: str) -> int:
         """

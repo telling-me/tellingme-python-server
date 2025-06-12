@@ -9,10 +9,6 @@ from app.models.user import User
 class EmotionService:
 
     @classmethod
-    async def create_emotion(cls, user_id: str, emotion_code: str) -> None:
-        await Emotion.create_by_user_id(user_id=user_id, emotion_code=emotion_code)
-
-    @classmethod
     async def create_emotion_inventory(cls) -> None:
         await EmotionInventory.create_bulk()
 

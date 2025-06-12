@@ -4,6 +4,7 @@ from tortoise import fields
 from tortoise.models import Model
 
 from app.common.utils.query_executor import QueryExecutor
+from app.core.configs import settings
 from app.dtos.answer.answer_data import AnswerData
 from app.queries.answer_query import (
     SELECT_ANSWER_BY_USER_UUID_QUERY,
@@ -28,11 +29,42 @@ class Answer(Model):
     blind_started_at = fields.DatetimeField(null=True)
     like_count = fields.IntField(null=False, default=0)
     is_spare = fields.BooleanField(null=False)
-    created_at = fields.DatetimeField(auto_now_add=True)
-    updated_at = fields.DatetimeField(auto_now=True)
 
     class Meta:
         table = "answer"
+
+    @classmethod
+    async def create_answer(
+        cls,
+        user_id: str,
+        content: str,
+        date: str,
+        emotion: int = 1,
+        like_count: int = 0,
+        is_premium: bool = False,
+        is_public: bool = False,
+        is_blind: bool = False,
+        is_spare: bool = False,
+    ) -> None:
+        created_time = datetime.now(settings.db_zoneinfo).strftime("%Y-%m-%d %H:%M:%S")
+
+        query = """
+                INSERT INTO answer (
+                    user_id, content, date, emotion,
+                    is_premium, is_public, is_blind, is_spare,
+                    created_time, like_count
+                )
+                VALUES (
+                    UNHEX(REPLACE(%s, '-', '')), %s, %s, %s,
+                    %s, %s, %s, %s,
+                    %s, %s
+                );
+            """
+
+        await QueryExecutor.execute_write_query(
+            query,
+            (user_id, content, date, emotion, is_premium, is_public, is_blind, is_spare, created_time, like_count),
+        )
 
     # 기존 get_answer_count_by_user_id 메서드
     @classmethod

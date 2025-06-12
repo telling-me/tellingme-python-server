@@ -80,6 +80,6 @@ async def mobile_my_page_handler(user_id: str) -> MyPageResponse:
 
     return MyPageResponse(
         code=status.HTTP_200_OK,
-        message="정상처리되었습니다",
+        message="mypage ui page",
         data=user_profile_data,
     )

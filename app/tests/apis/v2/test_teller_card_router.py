@@ -1,3 +1,5 @@
+import asyncio
+
 from fastapi import status
 
 from app.common.constants.badge_code_list import BadgeCodeList
@@ -16,10 +18,13 @@ async def test_update_teller_card(telling_me_client: TellingMeClient, init_torto
     color_mother = ColorMother()
 
     user_id = await user_mother.create_user()
-    await user_mother.create_level_inventory()
-    await badge_mother.create_badge_inventory()
-    await color_mother.create_color_inventory()
-    await badge_mother.create_badge(user_id=user_id, badge_code=BadgeCodeList.FIRST)
+
+    await asyncio.gather(
+        user_mother.create_level_inventory(),
+        badge_mother.create_badge_inventory(),
+        color_mother.create_color_inventory(),
+        badge_mother.create_badge(user_id=user_id, badge_code=BadgeCodeList.FIRST),
+    )
 
     teller_card_request = TellerCardRequest(
         user_id=user_id,
@@ -57,10 +62,12 @@ async def test_update_teller_card_with_invalid_code(
     color_mother = ColorMother()
 
     user_id = await user_mother.create_user()
-    await user_mother.create_level_inventory()
-    await badge_mother.create_badge_inventory()
-    await color_mother.create_color_inventory()
-    await badge_mother.create_badge(user_id=user_id, badge_code=BadgeCodeList.FIRST)
+    await asyncio.gather(
+        user_mother.create_level_inventory(),
+        badge_mother.create_badge_inventory(),
+        color_mother.create_color_inventory(),
+        badge_mother.create_badge(user_id=user_id, badge_code=BadgeCodeList.FIRST),
+    )
 
     invalid_badge_code_request = TellerCardRequest(
         user_id=user_id,

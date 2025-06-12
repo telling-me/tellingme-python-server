@@ -1,4 +1,3 @@
-
 from app.common.exceptions.custom_exception import CustomException
 from app.common.exceptions.error_code import ErrorCode
 from app.dtos.teller_card.teller_card_dto import TellerCardDTO
