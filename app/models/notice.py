@@ -1,11 +1,9 @@
 from typing import Optional
 
 from tortoise import fields
-from tortoise.fields import ForeignKeyRelation
 from tortoise.models import Model
 
 from app.common.utils.query_executor import QueryExecutor
-from app.models.user import User
 
 
 class Notice(Model):
@@ -17,12 +15,9 @@ class Notice(Model):
     link = fields.CharField(max_length=255, null=True)
     is_internal = fields.BooleanField(default=False)
     answer_id = fields.BigIntField(null=True)
+    user_id = fields.BinaryField(max_length=16, null=True)
     date = fields.DateField(null=True)
     reward_type = fields.CharField(max_length=255, null=True)
-
-    user: ForeignKeyRelation[User] = fields.ForeignKeyField(
-        "models.User", related_name="notices", on_delete=fields.CASCADE
-    )
 
     class Meta:
         table = "notice"

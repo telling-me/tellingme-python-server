@@ -1,9 +1,7 @@
 from tortoise import fields, models
-from tortoise.fields import ForeignKeyRelation
 
 from app.common.utils.query_executor import QueryExecutor
 from app.dtos.emotion.emotion_data import EmotionData
-from app.models.user import User
 from app.queries.emotion_query import (
     INSERT_EMOTION_CODE_FOR_USER_QUERY,
     SELECT_EMOTION_CODE_BY_USER_UUID_QUERY,
@@ -13,10 +11,24 @@ from app.queries.emotion_query import (
 class Emotion(models.Model):
     emotion_id = fields.BigIntField(primary_key=True)
     emotion_code = fields.CharField(max_length=255, unique=True)
-    user: ForeignKeyRelation[User] = fields.ForeignKeyField("models.User", related_name="emotions")
+    user_id = fields.BinaryField(max_length=16, null=True)
 
     class Meta:
         table = "emotion"
+
+    @classmethod
+    async def create_default_emotions_by_user_id(cls, user_id: str) -> None:
+        emotion_codes = ["EM_HAPPY", "EM_PROUD", "EM_OKAY", "EM_TIRED", "EM_SAD", "EM_ANGRY"]
+
+        values_placeholders = ", ".join(["(%s, UNHEX(REPLACE(%s, '-', '')))"] * len(emotion_codes))
+        values = []
+
+        for code in emotion_codes:
+            values.extend([code, user_id])
+
+        query = f"INSERT INTO emotion (emotion_code, user_id) VALUES {values_placeholders}"
+
+        await QueryExecutor.execute_write_query(query, tuple(values))
 
     @classmethod
     async def get_emotions_with_details_by_user_id(cls, user_id: str) -> list[EmotionData]:

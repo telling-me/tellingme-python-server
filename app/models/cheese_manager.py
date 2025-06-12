@@ -9,6 +9,7 @@ from tortoise.functions import Sum
 from tortoise.models import Model
 
 from app.common.constants.cheese_status import CheeseStatus
+from app.common.utils.query_executor import QueryExecutor
 
 
 class CheeseManager(Model):
@@ -20,6 +21,16 @@ class CheeseManager(Model):
 
     class Meta:
         table = "cheese_manager"
+
+    @classmethod
+    async def create_cheese_manager(cls) -> CheeseManager:
+        query = "INSERT INTO cheese_manager VALUES (DEFAULT);"
+        await QueryExecutor.execute_write_query(query)
+
+        result = await cls.all().order_by("-cheese_manager_id").first()
+        if result is None:
+            raise RuntimeError("CheeseManager creation failed unexpectedly.")
+        return result
 
     @staticmethod
     async def get_total_cheese_amount_by_manager(cheese_manager_id: int) -> int:

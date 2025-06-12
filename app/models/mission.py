@@ -1,10 +1,8 @@
 from tortoise import fields
-from tortoise.fields import ForeignKeyRelation
 from tortoise.models import Model
 
 from app.common.utils.query_executor import QueryExecutor
 from app.dtos.mission.mission_data import MissionData
-from app.models.user import User
 from app.queries.mission_query import SELECT_USER_MISSIONS_QUERY, UPDATE_USER_MISSION_PROGRESS_QUERY
 
 
@@ -13,10 +11,37 @@ class UserMission(Model):
     is_completed = fields.BooleanField(default=False)
     mission_code = fields.CharField(max_length=255)
     progress_count = fields.IntField(default=0)
-    user: ForeignKeyRelation[User] = fields.ForeignKeyField("models.User", related_name="missions")
+    user_id = fields.BinaryField(max_length=16)
 
     class Meta:
         table = "user_mission"
+
+    @classmethod
+    async def create_default_missions_by_user_id(cls, user_id: str) -> None:
+        mission_codes = [
+            "MS_LV_UP",
+            "MS_BADGE_POST_FIRST",
+            "MS_BADGE_POST_280_CHAR",
+            "MS_BADGE_POST_CONSECUTIVE_7",
+            "MS_BADGE_POST_EARLY_3",
+            "MS_DAILY_LIKE_3_PER_DAY",
+            "MS_BADGE_CHEESE_TOTAL_50",
+            "MS_BADGE_CHRISTMAS",
+            "MS_DAILY_POST_GENERAL",
+        ]
+
+        values_placeholders = ", ".join(["(%s, UNHEX(REPLACE(%s, '-', '')), %s, %s)"] * len(mission_codes))
+        values = []
+
+        for code in mission_codes:
+            values.extend([code, user_id, False, 0])
+
+        query = f"""
+            INSERT INTO user_mission (mission_code, user_id, is_completed, progress_count)
+            VALUES {values_placeholders}
+        """
+
+        await QueryExecutor.execute_write_query(query, tuple(values))
 
     @classmethod
     async def get_user_missions_by_condition_type(cls, user_id: str) -> list[MissionData]:

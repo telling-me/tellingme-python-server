@@ -1,21 +1,14 @@
 from tortoise import fields
-from tortoise.fields import ForeignKeyRelation
 from tortoise.models import Model
 
 from app.common.utils.query_executor import QueryExecutor
-from app.models.answer import Answer
-from app.models.user import User
 from app.queries.like_query import SELECT_UNIQUE_LIKES_COUNT_BY_USER_TODAY_QUERY
 
 
 class Like(Model):
     likes_id = fields.BigIntField(primary_key=True)
-    answer: ForeignKeyRelation[Answer] = fields.ForeignKeyField(
-        "models.Answer", related_name="likes", on_delete=fields.CASCADE
-    )
-    user: ForeignKeyRelation[User] = fields.ForeignKeyField(
-        "models.User", related_name="likes", on_delete=fields.CASCADE
-    )
+    answer_id = fields.BinaryField(null=True)
+    user_id = fields.BinaryField(max_length=16, null=True)
     created_time = fields.DatetimeField(null=True)
     modified_time = fields.DatetimeField(null=True)
     created_at = fields.DatetimeField(auto_now_add=True)
@@ -23,10 +16,6 @@ class Like(Model):
 
     class Meta:
         table = "likes"
-        indexes = [
-            ("answer_id",),
-            ("user_id",),
-        ]
 
     @staticmethod
     async def get_unique_likes_today(user_id: str) -> int:

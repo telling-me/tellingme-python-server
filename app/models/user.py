@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import uuid
 from datetime import datetime
 from typing import Optional
@@ -7,12 +9,10 @@ from tortoise.fields import ForeignKeyRelation
 from tortoise.models import Model
 
 from app.common.utils.query_executor import QueryExecutor
+from app.core.configs import settings
 from app.dtos.user.user_data import UserData
 from app.dtos.user.user_dto import UserProfileData
-from app.models.cheese_manager import CheeseManager
-from app.models.level import Level
 from app.models.refresh_token import RefreshToken
-from app.models.teller_card import TellerCard
 from app.queries.user_query import (
     SELECT_USER_INFO_BY_USER_UUID_QUERY,
     SELECT_USER_PROFILE_BY_USER_ID_QUERY,
@@ -21,7 +21,8 @@ from app.queries.user_query import (
 
 
 class User(Model):
-    user_id = fields.CharField(max_length=255, primary_key=True, description="Primary key for the User")
+    id = fields.BigIntField(primary_key=True)  # Auto Increment Primary Key
+    user_id = fields.BinaryField(max_length=16, description="UUID PK in binary form")
     allow_notification = fields.BooleanField(null=True)
     birth_date = fields.CharField(max_length=8, null=True)
     created_time = fields.DatetimeField(auto_now_add=True)
@@ -47,24 +48,76 @@ class User(Model):
         default="https://miro.medium.com/v2/resize:fit:1400/format:webp/1*dh7Xy5tFvRj7n2wf1UweAw.png",
     )
     premium_started_at = fields.DatetimeField(null=True)
-    cheese_manager: ForeignKeyRelation[CheeseManager] = fields.ForeignKeyField(
-        "models.CheeseManager",
-        related_name="users",
-        db_column="cheese_manager_id",
-    )
-    teller_card: ForeignKeyRelation[TellerCard] = fields.ForeignKeyField(
-        "models.TellerCard",
-        related_name="users",
-        db_column="teller_card_id",
-    )
-    level: ForeignKeyRelation[Level] = fields.ForeignKeyField(
-        "models.Level",
-        related_name="users",
-        db_column="level_id",
-    )
+    cheese_manager_id = fields.BigIntField(null=True)
+    teller_card_id = fields.BigIntField(null=True)
+    level_id = fields.BigIntField(null=True)
 
     class Meta:
         table = "user"
+
+    @classmethod
+    async def create_user(
+        cls,
+        social_id: str,
+        social_login_type: str,
+        nickname: str,
+        purpose: str,
+        job: int,
+        cheese_manager_id: int,
+        teller_card_id: int,
+        level_id: int,
+        allow_notification: bool = True,
+        birth_date: str | None = None,
+        gender: str = "female",
+        mbti: str | None = None,
+        push_token: str | None = None,
+        refresh_token: RefreshToken | None = None,
+        is_premium: bool = False,
+        profile_url: str | None = "",
+    ) -> str:
+
+        user_id = str(uuid.uuid4())
+        created_time = datetime.now(settings.db_zoneinfo).strftime("%Y-%m-%d %H:%M:%S")
+
+        query = """
+                INSERT INTO user (
+                    user_id, social_id, social_login_type, nickname, purpose, job,
+                    cheese_manager_id, teller_card_id, level_id,
+                    allow_notification, birth_date, gender, mbti,
+                    push_token, refresh_token_id, is_premium, profile_url, user_status, created_time
+                )
+                VALUES (
+                    UNHEX(REPLACE(%s, '-', '')), %s, %s, %s, %s, %s,
+                    %s, %s, %s,
+                    %s, %s, %s, %s,
+                    %s, %s, %s, %s, TRUE, %s
+                );
+                """
+
+        await QueryExecutor.execute_write_query(
+            query,
+            (
+                user_id,
+                social_id,
+                social_login_type,
+                nickname,
+                purpose,
+                job,
+                cheese_manager_id,
+                teller_card_id,
+                level_id,
+                allow_notification,
+                birth_date,
+                gender,
+                mbti,
+                push_token,
+                refresh_token,
+                is_premium,
+                profile_url,
+                created_time,
+            ),
+        )
+        return user_id
 
     @classmethod
     async def get_user_profile_by_user_id(cls, user_id: str) -> UserProfileData:
@@ -113,3 +166,11 @@ class User(Model):
             WHERE user_id IN ({cls.format_user_ids(user_ids)});
         """
         await Tortoise.get_connection("default").execute_query(query)
+
+    @staticmethod
+    def uuid_str_to_bytes(s: str) -> bytes:
+        return uuid.UUID(s).bytes
+
+    @staticmethod
+    def uuid_bytes_to_str(b: bytes) -> str:
+        return str(uuid.UUID(bytes=b))

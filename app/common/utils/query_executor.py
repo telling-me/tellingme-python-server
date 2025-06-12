@@ -35,3 +35,14 @@ class QueryExecutor:
             elif fetch_type == "multiple":
                 return result
         return 0 if fetch_type == "single" else []
+
+    @staticmethod
+    async def execute_write_query(query: str, values: Any = ()) -> None:
+        connection = Tortoise.get_connection("default")
+
+        if isinstance(values, tuple):
+            processed_values = tuple(v[0] if isinstance(v, tuple) else v for v in values)
+        else:
+            processed_values = (values,)
+
+        await connection.execute_query(query, processed_values)  # type: ignore
