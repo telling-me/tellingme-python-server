@@ -72,8 +72,6 @@ class PaymentService:
                 elif item.item_category == ItemCategory.EMOTION:
                     for _ in range(quantity):
                         await Emotion.create_by_user_id(user_id=user_id, emotion_code=item.item_code)
-                else:
-                    raise CustomException(ErrorCode.INVALID_ITEM_CATEGORY)
 
             return product_code
         except IntegrityError:

@@ -4,6 +4,7 @@ from fastapi import status
 
 from app.common.constants.badge_code_list import BadgeCodeList
 from app.common.constants.color_code_list import ColorCodeList
+from app.common.exceptions.error_code import ErrorCode
 from app.dtos.teller_card.teller_card_request import TellerCardRequest
 from app.tests.mothers.badge_mother import BadgeMother
 from app.tests.mothers.color_mother import ColorMother
@@ -92,5 +93,5 @@ async def test_update_teller_card_with_invalid_code(
     assert invalid_badge_code_response.status_code == status.HTTP_400_BAD_REQUEST
     assert invalid_color_code_response.status_code == status.HTTP_400_BAD_REQUEST
 
-    assert invalid_badge_code_response.json()["message"] == "유효하지 않은 뱃지 코드입니다"
-    assert invalid_color_code_response.json()["message"] == "유효하지 않은 컬러 코드입니다"
+    assert invalid_badge_code_response.json()["message"] == ErrorCode.INVALID_BADGE_CODE.message
+    assert invalid_color_code_response.json()["message"] == ErrorCode.INVALID_COLOR_CODE.message

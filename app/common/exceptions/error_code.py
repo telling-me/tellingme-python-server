@@ -11,10 +11,11 @@ class ErrorCode(Enum):
     INVALID_COLOR_CODE = (4006, "유효하지 않은 컬러 코드입니다")
 
     # 404 Not Found
-    NO_INVENTORY_FOR_PRODUCT = (4041, "이 상품에 대한 재고가 없습니다.")
     PRODUCT_NOT_FOUND = (4042, "해당 상품을 찾을 수 없습니다.")
-
     NO_VALID_RECEIPT = (4006, "유효한 영수증이 없습니다.")
+
+    # 500 server Error
+    NO_INVENTORY_FOR_PRODUCT = (5001, "데이터베이스에 해당 상품에 대한 재고가 없습니다.")
 
     def __init__(self, code: int, message: str) -> None:
         self._code = code

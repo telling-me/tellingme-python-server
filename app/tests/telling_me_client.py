@@ -1,5 +1,6 @@
 import httpx
 
+from app.dtos.payment.payment_request import PaymentRequest
 from app.dtos.teller_card.teller_card_request import TellerCardRequest
 
 
@@ -85,3 +86,6 @@ class TellingMeClient:
 
     async def update_teller_card(self, teller_card_request: TellerCardRequest) -> httpx.Response:
         return await self._client.post("/api/v2/tellercard", json=teller_card_request.model_dump())
+
+    async def payment_product(self, payment_request: PaymentRequest) -> httpx.Response:
+        return await self._client.post("/api/v2/payment", json=payment_request.model_dump())
