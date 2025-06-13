@@ -57,12 +57,24 @@ jobs:
 
   test: # 전체 테스트 실행한다.
     runs-on: ubuntu-22.04
+
+    services:
+      redis:
+        image: redis:7.2-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
     env:
       MYSQL_HOST: 127.0.0.1
       MYSQL_PORT: 3306
       MYSQL_USER: root
       MYSQL_PASSWORD: 1234
       MYSQL_DATABASE: db_telling_me_dev
+      REDIS_HOST: localhost
 
     steps:
       - name: Check out the codes
@@ -135,3 +147,5 @@ jobs:
 #        run: |
 #          echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
 #          ssh -o StrictHostKeyChecking=no -t -i private_key ${USER_NAME}@${HOSTNAME} "bash -i -c 'gunicorn_reload'"
+
+# todo : CD 작성하기
