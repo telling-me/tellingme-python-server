@@ -22,6 +22,7 @@ TORTOISE_APP_MODELS = [
     "app.models.mission",
     "app.models.mission_inventory",
     "app.models.like",
+    "app.models.notice",
 ]
 
 TORTOISE_ORM = {

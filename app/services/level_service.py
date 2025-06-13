@@ -39,9 +39,6 @@ class LevelService:
         current_exp = level_dto.currentExp
         required_exp = level_dto.requiredExp
 
-        if current_exp is None or required_exp is None:
-            raise ValueError("Experience values cannot be None")
-
         if current_exp >= required_exp:
             new_exp = current_exp - required_exp
             new_level = level + 1

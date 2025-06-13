@@ -160,6 +160,36 @@ class RewardInventory(Model):
     class Meta:
         table = "reward_inventory"
 
+    @classmethod
+    async def create_bulk(cls) -> None:
+        rewards_data = [
+            (1, "RW_LV_000", "레벨업 보상"),
+            (2, "RW_FIRST_POST", "첫 글 작성 보상"),
+            (3, "RW_LONG_POST", "280자 이상의 글을 작성 보상"),
+            (4, "RW_CONSECUTIVE_7", "연속 7일 글 작성 보상"),
+            (5, "RW_EARLY_MORNING", "오전 12시~6시에 3개의 글 작성 보상"),
+            (6, "RW_LIKE_3_DAY", "하루 좋아요 3개"),
+            (7, "RW_CHEESE_50", "누적 치즈 50개를 획득하세요"),
+            (8, "RW_REGISTRATION", "회원가입 보상"),
+            (9, "RW_CHRISTMAS", "크리스마스 시즌에 접속하여 뱃지를 받으세요"),
+            (10, "RW_POST_2_5", "글 작성 보상 2~5개"),
+            (11, "RW_POST_GENERAL", "글 작성 보상"),
+        ]
+
+        async with in_transaction():
+            await cls.bulk_create(
+                [
+                    cls(
+                        reward_inventory_id=reward_id,
+                        reward_code=code,
+                        reward_description=desc,
+                        reward_name=None,
+                        item_code=None,
+                    )
+                    for reward_id, code, desc in rewards_data
+                ]
+            )
+
 
 class ItemInventoryRewardInventory(Model):
     item_inventory_reward_invnetory_id = fields.BigIntField(primary_key=True)
@@ -180,3 +210,38 @@ class ItemInventoryRewardInventory(Model):
 
     class Meta:
         table = "item_inventory_reward_inventory"
+
+    @classmethod
+    async def create_bulk(cls) -> None:
+        data = [
+            (1, 1, 39, 1, "UNIT"),
+            (2, 1, 39, 2, "UNIT"),
+            (3, 1, 3, 2, "UNIT"),
+            (4, 1, 4, 3, "UNIT"),
+            (5, 1, 1, 4, "UNIT"),
+            (6, 1, 6, 5, "UNIT"),
+            (7, 1, 40, 6, "UNIT"),
+            (8, 1, 7, 7, "UNIT"),
+            (9, 1, 5, 8, "UNIT"),
+            (10, 1, 2, 9, "UNIT"),
+            (11, 1, 23, 9, "UNIT"),
+            (12, 5, 40, 10, "UNIT"),
+            (13, 5, 39, 3, "UNIT"),
+            (14, 5, 39, 4, "UNIT"),
+            (15, 5, 39, 5, "UNIT"),
+            (16, 10, 39, 7, "UNIT"),
+        ]
+
+        async with in_transaction():
+            await cls.bulk_create(
+                [
+                    cls(
+                        item_inventory_reward_invnetory_id=pk,
+                        quantity=qty,
+                        item_inventory_id=item_id,
+                        reward_inventory_id=reward_id,
+                        item_measurement=measure,
+                    )
+                    for pk, qty, item_id, reward_id, measure in data
+                ]
+            )

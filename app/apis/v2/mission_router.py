@@ -13,7 +13,7 @@ async def mission_handler(user_id: str) -> None:
     process_mission_in_background.delay(user_id)
 
 
-@mission_router.get("/direct")
+@mission_router.get("/check")
 async def mission_handler_direct(
     user_id: str,
     mission_service: MissionService = Depends(),

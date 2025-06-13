@@ -35,9 +35,6 @@ class NoticeService:
         nickname: str | None = None,
         new_level: int | None = None,
     ) -> None:
-        if not badge_code and not level_up and total_cheese == 0 and total_exp == 0:
-            return
-
         # 1. 제목 생성
         title = cls.create_title(
             badge_full_name=badge_full_name,

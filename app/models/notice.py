@@ -8,15 +8,16 @@ from app.common.utils.query_executor import QueryExecutor
 
 class Notice(Model):
     notice_id = fields.BigIntField(primary_key=True)
-    title = fields.CharField(max_length=255, null=False)
-    content = fields.TextField(null=True)
-    is_read = fields.BooleanField(default=False)
-    created_at = fields.DatetimeField(auto_now_add=True)
-    link = fields.CharField(max_length=255, null=True)
-    is_internal = fields.BooleanField(default=False)
     answer_id = fields.BigIntField(null=True)
+    content = fields.TextField(null=True)
+    created_at = fields.DatetimeField(auto_now_add=True)
+    is_internal = fields.BooleanField(default=False)
+    is_read = fields.BooleanField(default=False)
+    link = fields.CharField(max_length=255, null=True)
+    title = fields.CharField(max_length=255, null=False)
     user_id = fields.BinaryField(max_length=16, null=True)
     date = fields.DateField(null=True)
+    badge_code = fields.CharField(max_length=255, null=True)
     reward_type = fields.CharField(max_length=255, null=True)
 
     class Meta:

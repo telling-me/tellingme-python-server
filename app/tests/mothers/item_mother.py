@@ -13,3 +13,12 @@ class ItemMother:
             item_service.create_product_inventory(),
         )
         await item_service.create_link_item_product()
+
+    @staticmethod
+    async def create_item_inventory_and_reward_inventory() -> None:
+        item_service = ItemService()
+        await asyncio.gather(
+            item_service.create_item_inventory(),
+            item_service.create_reward_inventory(),
+        )
+        await item_service.create_link_item_reward()

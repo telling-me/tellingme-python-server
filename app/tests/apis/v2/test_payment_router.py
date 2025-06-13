@@ -1,4 +1,3 @@
-# todo : payment router 테스트코드 작성
 import asyncio
 from unittest.mock import patch
 
@@ -96,6 +95,8 @@ async def test_duplicate_payment_case(telling_me_client: TellingMeClient, init_t
     )
 
     payment_request = PaymentRequest(user_id=user_id, productCode=ProductCodeList.PD_BG_CHRISTMAS_2024)
+
+    # When
     with patch("app.models.badge.Badge.create_by_user_id", side_effect=IntegrityError("mock integrity error")):
         response = await telling_me_client.payment_product(payment_request=payment_request)
 
@@ -133,6 +134,8 @@ async def test_payment_when_cheese_is_insufficient(
     )
 
     payment_request = PaymentRequest(user_id=user_id, productCode=ProductCodeList.PD_BG_CHRISTMAS_2024)
+
+    # When
     response = await telling_me_client.payment_product(payment_request=payment_request)
 
     code = response.json()["code"]
@@ -170,6 +173,8 @@ async def test_payment_when_not_cheese_payment(
 
     # 현금 구매 제품
     payment_request = PaymentRequest(user_id=user_id, productCode=ProductCodeList.PD_PLUS_MONTH_1_KR)
+
+    # When
     response = await telling_me_client.payment_product(payment_request=payment_request)
 
     code = response.json()["code"]
@@ -203,8 +208,9 @@ async def test_payment_invalid_product_code(telling_me_client: TellingMeClient, 
         user_mother.add_cheese(user_id=user_id, amount=100),
     )
 
-    # 현금 구매 제품
     payment_request = PaymentRequest(user_id=user_id, productCode="invalid_product_code")
+
+    # When
     response = await telling_me_client.payment_product(payment_request=payment_request)
 
     code = response.json()["code"]
@@ -240,8 +246,9 @@ async def test_payment_invalid_item_category(
         user_mother.add_cheese(user_id=user_id, amount=100),
     )
 
-    # 현금 구매 제품
     payment_request = PaymentRequest(user_id=user_id, productCode=ProductCodeList.PD_TEST)
+
+    # When
     response = await telling_me_client.payment_product(payment_request=payment_request)
 
     code = response.json()["code"]

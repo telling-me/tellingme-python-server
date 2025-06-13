@@ -27,6 +27,17 @@ from app.services.notice_service import NoticeService
 
 
 class MissionService:
+
+    @staticmethod
+    async def create_mission_inventory() -> None:
+        await MissionInventory.create_bulk()
+
+    @staticmethod
+    async def reset_mission() -> None:
+        await UserMission.filter(
+            mission_code__in=["MS_LV_UP", "MS_DAILY_LIKE_3_PER_DAY", "MS_DAILY_POST_GENERAL"]
+        ).update(is_completed=False, progress_count=0)
+
     @staticmethod
     async def get_user_missions(user_id: str) -> list[UserMissionDTO]:
         user_missions = await UserMission.get_user_missions_by_condition_type(user_id)
@@ -123,12 +134,6 @@ class MissionService:
             await self.reward_badge_mission(
                 user_id=user_id, cheese_manager_id=cheese_manager_id, reward_code=reward_code
             )
-        else:
-            await self.reward_mission(
-                user_id=user_id,
-                cheese_manager_id=cheese_manager_id,
-                reward_code=reward_code,
-            )
 
     async def evaluate_mission_condition(self, user_id: str, mission_code: str) -> int:
         if mission_code == MS.BADGE_POST_FIRST and await self.check_first_post(user_id):
@@ -185,7 +190,7 @@ class MissionService:
     @staticmethod
     async def check_early_morning_posts(user_id: str) -> bool:
         recent_answer = await Answer.get_most_recent_answer_by_user_id(user_id=user_id)
-        return 0 <= recent_answer.created_time.hour <= 5 if recent_answer else False
+        return 0 <= recent_answer.created_time.hour <= 6 if recent_answer else False
 
     @staticmethod
     async def check_cheese_total(user_id: str) -> bool:
@@ -257,11 +262,6 @@ class MissionService:
             elif item.item_category == ItemCategory.CHEESE:
                 total_cheese += quantity
                 await CheeseManager.add_cheese(cheese_manager_id=cheese_manager_id, amount=quantity)
-            elif item.item_category == ItemCategory.POINT:
-                total_exp += quantity
-                await LevelService.add_exp(user_id=user_id, exp=quantity)
-            else:
-                raise ValueError(f"Invalid item category for reward: {item.item_category}")
 
         badge_full_name = badge_info[0].badge_full_name if badge_info else None
         badge_code = badge_info[0].badge_code if badge_info else None
@@ -398,18 +398,4 @@ class MissionService:
             total_cheese=reward_dto.total_cheese,
             badge_code=reward_dto.badge_code,
             badge_full_name=reward_dto.badge_full_name,
-        )
-
-    async def reward_mission(self, user_id: str, cheese_manager_id: int, reward_code: str) -> None:
-        item_inventory_rewards = await self.validate_reward(reward_code=reward_code)
-        reward_dto = await self.process_reward(
-            item_inventory_rewards=item_inventory_rewards,
-            user_id=user_id,
-            cheese_manager_id=cheese_manager_id,
-        )
-        await self._create_reward_notice(
-            user_id=user_id,
-            reward_type=RewardType.DAILY_MISSION,
-            total_exp=reward_dto.total_exp,
-            total_cheese=reward_dto.total_cheese,
         )

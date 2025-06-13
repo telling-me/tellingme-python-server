@@ -84,6 +84,18 @@ class TellingMeClient:
             },
         )
 
+    async def check_mission(self, user_id: str) -> httpx.Response:
+        return await self._client.get(
+            "/api/v2/mission/check",
+            params={
+                key: value
+                for key, value in {
+                    "user_id": user_id,
+                }.items()
+                if value is not None
+            },
+        )
+
     async def update_teller_card(self, teller_card_request: TellerCardRequest) -> httpx.Response:
         return await self._client.post("/api/v2/tellercard", json=teller_card_request.model_dump())
 

@@ -12,11 +12,13 @@ class AnswerService:
         user_id: str,
         content: str,
         date: str,
+        like_count: int = 0,
     ) -> None:
         await Answer.create_answer(
             user_id=user_id,
             content=content,
             date=date,
+            like_count=like_count,
         )
 
     @classmethod
