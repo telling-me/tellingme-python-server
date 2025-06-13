@@ -14,7 +14,7 @@ class Env(StrEnum):
 class Settings(BaseSettings):
     ENV: Env = Env.LOCAL
     DB_HOST: str = "localhost"
-    DB_PORT: int = 3307
+    DB_PORT: int = 3306
     DB_USER: str = "root"
     DB_PASSWORD: str = "password"
     DB_NAME: str = "tellingme_local"
