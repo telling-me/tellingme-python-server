@@ -1,0 +1,13 @@
+from enum import Enum
+
+
+class ColorCodeList(str, Enum):
+    CL_BLUE_001 = "CL_BLUE_001"
+    CL_DEFAULT = "CL_DEFAULT"
+    CL_GREEN_001 = "CL_GREEN_001"
+    CL_NAVY_001 = "CL_NAVY_001"
+    CL_ORANGE_001 = "CL_ORANGE_001"
+    CL_PINK_001 = "CL_PINK_001"
+    CL_PURPLE_001 = "CL_PURPLE_001"
+    CL_RED_001 = "CL_RED_001"
+    CL_YELLOW_001 = "CL_YELLOW_001"
